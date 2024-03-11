@@ -1,0 +1,6 @@
+
+*.vsidx
+*.lock
+/SharpBlunamiControl/.vs
+/SharpBlunamiControl/SharpBlunamiControl/bin
+/SharpBlunamiControl/SharpBlunamiControl/obj
