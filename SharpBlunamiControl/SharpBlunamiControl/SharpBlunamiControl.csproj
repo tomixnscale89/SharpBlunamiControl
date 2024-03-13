@@ -50,6 +50,8 @@
     <Compile Include="BLE\BlunamiBLEAdvertisement.cs" />
     <Compile Include="BLE\BlunamiBLEConnection.cs" />
     <Compile Include="BLE\DisplayHelpers.cs" />
+    <Compile Include="Control\RadialController.cs" />
+    <Compile Include="Control\RadialControllerInterop.cs" />
     <Compile Include="Serial\BlunamiSerial.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

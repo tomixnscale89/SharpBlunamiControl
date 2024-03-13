@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Windows.Devices.Bluetooth.Advertisement;
 using Windows.Devices.Bluetooth;
 using System.IO.Ports;
+using System.Diagnostics;
 
 
 namespace SharpBlunamiControl
@@ -19,12 +20,17 @@ namespace SharpBlunamiControl
         bool test = true;
         static void Main(string[] args)
         {
+            Console.Title = "SharpBlunamiControl";
+
+            
+
             var BlunamiControl = new BlunamiControl();
             // Create and initialize a new watcher instance.
             BlunamiControl.watcher = new BluetoothLEAdvertisementWatcher();
 
+            //BlunamiControl.SurfaceDialSetup();
 
-            //BlunamiControl.SelectSerialPort();
+            BlunamiControl.SelectSerialPort();
 
             if (BlunamiControl.test)
             {
