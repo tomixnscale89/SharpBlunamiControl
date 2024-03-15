@@ -90,45 +90,53 @@ namespace SharpBlunamiControl
         float buttonHoldInterval = 0.2f;
         bool debugString = true;
 
-        void SelectSerialPort()
+        bool SelectSerialPort()
         {
-            availablePorts = SerialPort.GetPortNames();
-            if (availablePorts.Length != 0)
+            availablePorts = SerialPort.GetPortNames(); // Get all available Serial Ports
+            if (availablePorts.Length != 0) // Make sure the ports are more than zero
             {
-                while (!canContinueBeyondSerialPortSelection)
+                while (!canContinueBeyondSerialPortSelection) // stick in this loop until user selects a real port
                 {
                     Console.WriteLine("Please enter the correct COM Port to use:");
 
-                    for (int i = 0; i < availablePorts.Length; i++)
+                    for (int i = 0; i < availablePorts.Length; i++) // enumerate through all ports
                     {
                         Console.WriteLine("[" + i.ToString() + "] " + availablePorts[i]);
                     }
-                    ConsoleKeyInfo keyEntered = Console.ReadKey();
+
+                    ConsoleKeyInfo keyEntered = Console.ReadKey(); // read key
                     Console.ReadLine();
-                    if (keyEntered != null)
+                    if (keyEntered != null) // as long as key is not null
                     {
-                        if (Char.IsDigit(keyEntered.KeyChar))
+                        if (Char.IsDigit(keyEntered.KeyChar)) // check if the key is a digit. if not, tell them to start over
                         {
-                            comPortIndex = int.Parse(keyEntered.KeyChar.ToString());
-                            if (availablePorts[comPortIndex] != null)
+                            comPortIndex = int.Parse(keyEntered.KeyChar.ToString()); // convert key to a int
+                            try // does this entered port exist in our array?
                             {
                                 serialPort = new SerialPort(availablePorts[comPortIndex], 9600, Parity.None, 8, StopBits.One);
                                 canContinueBeyondSerialPortSelection |= true;
                                 Console.WriteLine("Using COM port: " + availablePorts[comPortIndex]);
                             }
-                            else
+                            catch (System.IO.IOException)
                             {
                                 Console.WriteLine("Serial Port does not exist. Please enter again.");
                             }
+                            catch (System.IndexOutOfRangeException)
+                            {
+                                Console.WriteLine("Serial Port does not exist. Please enter again.");
+                            }
+
                         }
                     }
                 }
+                return true;
+
             }
 
-            else
+            else // No ports found at all, shut down program
             {
                 Console.WriteLine("No COM ports found. Exiting....");
-                return;
+                return false;
             }
         }
 
@@ -145,12 +153,13 @@ namespace SharpBlunamiControl
 
         private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            //Console.WriteLine(serialPort.ReadExisting());
-            SerialPort sp = (SerialPort)sender;
-            byte[] buf = new byte[sp.BytesToRead];
-            Console.WriteLine("Received data," + buf.Length);
-            sp.Read(buf, 0, buf.Length);
-            //buf.ToList().ForEach(b => recievedData.Enqueue(b));
+            byte[] buf = new byte[3];
+            for(int i = 0; i < 3; i++)
+            {
+                buf[i] = (byte)serialPort.ReadByte();
+            }
+            if(debugString)
+                Console.WriteLine("Hex: " + BitConverter.ToString(buf));
             if (buf.Length == 3)
                 DetermineTMCCCommand(buf);
         }

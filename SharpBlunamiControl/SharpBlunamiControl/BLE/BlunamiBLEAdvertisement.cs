@@ -13,16 +13,15 @@ namespace SharpBlunamiControl
     internal partial class BlunamiControl
     {
         List<ulong> BluetoothDeviceAddresses = new List<ulong> { };
-        List<BluetoothLEDevice> FoundBluetoothDevices = new List<BluetoothLEDevice> { };
         List<string> FoundBluetoothDevicesNames = new List<string> { };
         private async void BlunamiBLEAdvertisementSetup(BluetoothLEAdvertisementWatcher watcher)
         {
 
             var manufacturerData = new BluetoothLEManufacturerData();
             // Then, set the company ID for the manufacturer data. Here use the Blunami Manufacturer (Verifone Systems): 0x200
-            //manufacturerData.CompanyId = 0x200;
+            manufacturerData.CompanyId = 0x200;
 
-            //watcher.AdvertisementFilter.Advertisement.ManufacturerData.Add(manufacturerData);
+            watcher.AdvertisementFilter.Advertisement.ManufacturerData.Add(manufacturerData);
 
             // Part 1B: Configuring the signal strength filter for proximity scenarios
 
