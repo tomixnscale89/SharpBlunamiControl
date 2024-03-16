@@ -8,6 +8,8 @@ using Windows.Devices.Bluetooth.Advertisement;
 using Windows.Devices.Bluetooth;
 using System.IO.Ports;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
+using SharpBlunamiControl.GUI;
+using System.Windows.Forms;
 
 namespace SharpBlunamiControl
 {
@@ -17,9 +19,11 @@ namespace SharpBlunamiControl
         BluetoothLEAdvertisementWatcher watcher;
         List<BlunamiEngine> FoundBlunamiDevices = new List<BlunamiEngine> { };
 
-        //bool comPortFound = false;
+        [STAThread]
         static void Main(string[] args)
         {
+            
+
             var BlunamiControl = new BlunamiControl();
             // Create and initialize a new watcher instance.
             BlunamiControl.watcher = new BluetoothLEAdvertisementWatcher();
@@ -102,7 +106,12 @@ namespace SharpBlunamiControl
             Console.ReadLine();
 
             BlunamiControl.FoundBluetoothDevices.ForEach(i => i.Dispose()); // disconnect and clean up all remaining BLE connections
-            BlunamiControl.ClosePort(); // close Serial port
+            if(BlunamiControl.serialEnabled)
+                BlunamiControl.ClosePort(); // close Serial port
+
+            //Application.EnableVisualStyles();
+            //Application.SetCompatibleTextRenderingDefault(false);
+            //Application.Run(new Form1());
         }
 
         

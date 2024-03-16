@@ -75,6 +75,7 @@ namespace SharpBlunamiControl
         SerialPort serialPort;
         int comPortIndex = 0;
         bool canContinueBeyondSerialPortSelection = false;
+        bool serialEnabled = false;
 
         bool bellButtonPressed = false;
         bool whistleButtonPressed = false;
@@ -85,6 +86,8 @@ namespace SharpBlunamiControl
         bool boostButtonPressed = false;
         bool brakeButtonPressed = false;
         bool directionButtonPressed = false;
+
+        int lastFoundTMCCID;
         float timer;
         float lastPressTime;
         float buttonHoldInterval = 0.2f;
@@ -116,6 +119,7 @@ namespace SharpBlunamiControl
                                 serialPort = new SerialPort(availablePorts[comPortIndex], 9600, Parity.None, 8, StopBits.One);
                                 canContinueBeyondSerialPortSelection |= true;
                                 Console.WriteLine("Using COM port: " + availablePorts[comPortIndex]);
+                                serialEnabled = true;
                             }
                             catch (System.IO.IOException)
                             {
@@ -161,10 +165,164 @@ namespace SharpBlunamiControl
             if(debugString)
                 Console.WriteLine("Hex: " + BitConverter.ToString(buf));
             if (buf.Length == 3)
-                DetermineTMCCCommand(buf);
+            {
+                /*
+                 * Idea for this:
+                 * 1. TMCC Packet comes over serial. Parse it.
+                 * 2. Deconstruct the command byte, data byte, and engine ID.
+                 * 3. Store the engine ID, and then go set which buttons were pressed.
+                 * 4. back in the main loop, when a button is pressed, we check all of our
+                 * BlunamiEngine list to find a engine that has the same ID. If it exists,
+                 * then connect and send the data over.
+                 * 
+                 */
+                var TMCCPacket = DetermineTMCCCommand(buf);
+                lastFoundTMCCID = TMCCPacket.Item3;
+                switch (TMCCPacket.Item1)
+                {
+                    case (int)TMCCCommandType.CT_ACTION:
+                        {
+                            SetTMCCButtonSates(TMCCPacket.Item2);
+                            break;
+                        }
+                    case (int)TMCCCommandType.CT_RELATIVE_SPEED:
+                        {
+                            break;
+                        }
+                    case (int)TMCCCommandType.CT_ABSOLUTE_SPEED:
+                        {
+                            break;
+                        }
+                }
+
+            }
+                
         }
 
-        private void DetermineTMCCCommand(byte[] buf)
+        void SetTMCCButtonSates(int dataid)
+        {
+            switch (dataid)
+            {
+                case (int)EngineCommandParams.EC_BLOW_HORN_1:
+                case (int)EngineCommandParams.EC_BLOW_HORN_2:
+                    {
+                        //loco.dynamoFlags |= BlunamiEngineEffectCommandParams.LONG_WHISTLE;
+                        //loco.whistleOn = true;
+                        whistleButtonPressed = true;
+                        lastPressTime = timer;
+                        if (debugString)
+                            Console.WriteLine("Horn pressed");
+                        break;
+                    }
+
+                case (int)EngineCommandParams.EC_RING_BELL:
+                    {
+                        bellButtonPressed = true;
+                        lastPressTime = timer;
+                        if (debugString)
+                            Console.WriteLine("Bell pressed\n");
+                        break;
+                    }
+
+                case (int)EngineCommandParams.EC_TOGGLE_DIRECTION:
+                    {
+                        directionButtonPressed = true;
+                        lastPressTime = timer;
+                        if (debugString)
+                            Console.WriteLine("Toggle direction pressed\n");
+                        break;
+                    }
+
+                case (int)EngineCommandParams.EC_AUX_1_OPTION_1:
+                    {
+                        shortWhistleButtonPressed = true;
+                        lastPressTime = timer;
+                        if (debugString)
+                            Console.WriteLine("Aux1 pressed\n");
+                        break;
+                    }
+
+                case (int)EngineCommandParams.EC_AUX_2_OPTION_1:
+                    {
+                        headlightButtonPressed = true;
+                        lastPressTime = timer;
+                        if (debugString)
+                            Console.WriteLine("Aux2 pressed\n");
+                        break;
+                    }
+
+                case (int)EngineCommandParams.EC_OPEN_FRONT_COUPLER:
+                    {
+                        frontCouplerButtonPressed = true;
+                        lastPressTime = timer;
+                        if (debugString)
+                            Console.WriteLine("Front Coupler pressed\n");
+                        break;
+                    }
+
+                case (int)EngineCommandParams.EC_OPEN_REAR_COUPLER:
+                    {
+                        rearCouplerButtonPressed = true;
+                        lastPressTime = timer;
+                        if (debugString)
+                            Console.WriteLine("Rear Coupler pressed\n");
+                        break;
+                    }
+
+                case (int)EngineCommandParams.EC_BOOST_SPEED:
+                    {
+                        boostButtonPressed = true;
+                        lastPressTime = timer;
+                        if (debugString)
+                            Console.WriteLine("Boost pressed\n");
+                        break;
+                    }
+
+                case (int)EngineCommandParams.EC_BRAKE_SPEED:
+                    {
+                        brakeButtonPressed = true;
+                        lastPressTime = timer;
+                        if (debugString)
+                            Console.WriteLine("Brake pressed\n");
+                        break;
+                    }
+
+                default:
+                    {
+                        dataid &= (int)EngineCommandParams.EC_NUMERIC_MASK;
+                        if (debugString)
+                            Console.WriteLine("Numerical pressed: %d\n", dataid);
+                        break;
+
+                        switch (dataid)
+                        {
+                            case 0:
+                                break;
+                            case 1:
+                                break;
+                            case 2:
+                                break;
+                            case 3:
+                                break;
+                            case 4:
+                                break;
+                            case 5:
+                                break;
+                            case 6:
+                                break;
+                            case 7:
+                                break;
+                            case 8:
+                                break;
+                            case 9:
+                                break;
+                        }
+                    }
+
+            }
+        }
+
+        private Tuple<int , int, int> DetermineTMCCCommand(byte[] buf)
         {
             if ((int)buf[0] == 0xFE)
             {
@@ -181,188 +339,12 @@ namespace SharpBlunamiControl
                 //{
                 int cmdid = (int)buf[2] & 0b01100000;
                 int dataid = (int)buf[2] & 0b00011111;
-                switch (cmdid)
-                {
 
-                    case (int)TMCCCommandType.CT_ACTION:
-                        {
-                            switch (dataid)
-                            {
-                                case (int)EngineCommandParams.EC_BLOW_HORN_1:
-                                    {
-                                        //loco.dynamoFlags |= BlunamiEngineEffectCommandParams.LONG_WHISTLE;
-                                        //loco.whistleOn = true;
-                                        lastPressTime = timer;
-                                        if (debugString)
-                                            Console.WriteLine("Horn pressed");
-                                        break;
-                                    }
-
-                                case (int)EngineCommandParams.EC_RING_BELL:
-                                    {
-                                        bellButtonPressed = true;
-                                        lastPressTime = timer;
-                                        if (debugString)
-                                            Console.WriteLine("Bell pressed\n");
-                                        break;
-                                    }
-
-                                case (int)EngineCommandParams.EC_TOGGLE_DIRECTION:
-                                    {
-                                        directionButtonPressed = true;
-                                        lastPressTime = timer;
-                                        if (debugString)
-                                            Console.WriteLine("Toggle direction pressed\n");
-                                        break;
-                                    }
-
-                                case (int)EngineCommandParams.EC_AUX_1_OPTION_1:
-                                    {
-                                        shortWhistleButtonPressed = true;
-                                        lastPressTime = timer;
-                                        if (debugString)
-                                            Console.WriteLine("Aux1 pressed\n");
-                                        break;
-                                    }
-
-                                case (int)EngineCommandParams.EC_AUX_2_OPTION_1:
-                                    {
-                                        headlightButtonPressed = true;
-                                        lastPressTime = timer;
-                                        if (debugString)
-                                            Console.WriteLine("Aux2 pressed\n");
-                                        break;
-                                    }
-
-                                case (int)EngineCommandParams.EC_OPEN_FRONT_COUPLER:
-                                    {
-                                        frontCouplerButtonPressed = true;
-                                        lastPressTime = timer;
-                                        if (debugString)
-                                            Console.WriteLine("Front Coupler pressed\n");
-                                        break;
-                                    }
-
-                                case (int)EngineCommandParams.EC_OPEN_REAR_COUPLER:
-                                    {
-                                        rearCouplerButtonPressed = true;
-                                        lastPressTime = timer;
-                                        if (debugString)
-                                            Console.WriteLine("Rear Coupler pressed\n");
-                                        break;
-                                    }
-
-                                case (int)EngineCommandParams.EC_BOOST_SPEED:
-                                    {
-                                        boostButtonPressed = true;
-                                        lastPressTime = timer;
-                                        if (debugString)
-                                            Console.WriteLine("Boost pressed\n");
-                                        break;
-                                    }
-
-                                case (int)EngineCommandParams.EC_BRAKE_SPEED:
-                                    {
-                                        brakeButtonPressed = true;
-                                        lastPressTime = timer;
-                                        if (debugString)
-                                            Console.WriteLine("Brake pressed\n");
-                                        break;
-                                    }
-
-                                default:
-                                    {
-                                        dataid &= (int)EngineCommandParams.EC_NUMERIC_MASK;
-                                        if (debugString)
-                                            Console.WriteLine("Numerical pressed: %d\n", dataid);
-                                        break;
-
-                                        switch (dataid)
-                                        {
-                                            case 0:
-                                                break;
-                                            case 1:
-                                                break;
-                                            case 2:
-                                                break;
-                                            case 3:
-                                                break;
-                                            case 4:
-                                                break;
-                                            case 5:
-                                                break;
-                                            case 6:
-                                                break;
-                                            case 7:
-                                                break;
-                                            case 8:
-                                                break;
-                                            case 9:
-                                                break;
-                                        }
-                                    }
-
-
-
-                            }
-                            break;
-                        }
-
-                    case (int)TMCCCommandType.CT_RELATIVE_SPEED:
-                        {
-                            if (debugString)
-                                Console.WriteLine("Speed command\n");
-
-                            switch (dataid)
-                            {
-                                case 0xA:
-                                    //loco.speed += 5;
-                                    break;
-                                case 0x9:
-                                    //loco.speed += 4;
-                                    break;
-                                case 0x8:
-                                    //loco.speed += 3;
-                                    break;
-                                case 0x7:
-                                    //loco.speed += 2;
-                                    break;
-                                case 0x6:
-                                    //loco.speed += 1;
-                                    break;
-                                case 0x5:
-                                    // loco.speed += 0;
-                                    break;
-                                case 0x4:
-                                    // loco.speed += -1;
-                                    break;
-                                case 0x3:
-                                    //  loco.speed += -2;
-                                    break;
-                                case 0x2:
-                                    // loco.speed += -3;
-                                    break;
-                                case 0x1:
-                                    //  loco.speed += -4;
-                                    break;
-                                case 0x0:
-                                    //  loco.speed += -5;
-                                    break;
-                            }
-
-                            //if (loco.speed > 126)
-                            // loco.speed = 126;
-                            //if (loco.speed < 0)
-                            // loco.speed = 0;
-
-                            // WriteBlunamiSpeedCommand(loco);
-                            break;
-                        }
-                }
-                //}
-
-                //}
+                var commandData = new Tuple<int, int,int>(cmdid, dataid, engineid);
+                return commandData;
             }
+            else
+                return null;
         }
     }
 }

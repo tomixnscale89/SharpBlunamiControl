@@ -92,9 +92,7 @@ namespace SharpBlunamiControl
 {
     internal partial class BlunamiControl
     {
-        const int DCC_LONG_ADDRESS_CONSTANT = 49152;
-        string blunamiServiceStr = "f688fd00-da9a-2e8f-d003-ebcdcc259af9";
-        string blunamiDCCCharacteristicStr = "f688fd1d-da9a-2e8f-d003-ebcdcc259af9";
+        
 
         string PrintDecoderName(int type)
         {
@@ -161,6 +159,142 @@ namespace SharpBlunamiControl
 
                 }
             }
+        }
+
+         async Task<int> ReadCVFromDecoder(BlunamiEngine loco, int cv)
+        {
+            int cvData = -1;
+            if(loco.BluetoothLeDevice != null)
+            {
+                try
+                {
+                    byte[] readCVCommand = new BlunamiCommandBase().baseReadCVCommand;
+                    readCVCommand[4] = (byte)cv;
+
+                    cvData = await WriteThenReadDataToBlunami(loco, readCVCommand);
+                }
+                catch
+                {
+
+                }
+            }
+            return cvData;
+        }
+
+        async Task WriteDataOnlyToBlunami(BlunamiEngine loco, byte[] data)
+        {
+            var writer = new DataWriter();
+            if (loco.BluetoothLeDevice != null)
+            {
+                try
+                {
+                    if(loco.BlunamiCharactertisic != null)
+                    {
+                        GattWriteResult result = await loco.BlunamiCharactertisic.WriteValueWithResultAsync(writer.DetachBuffer()); ;
+                        if (result.Status == GattCommunicationStatus.Success)
+                        {
+                            // Successfully wrote to device
+                        }
+                    }
+                }
+                catch
+                {
+
+                }
+            }
+        }
+
+        async Task<int> WriteThenReadDataToBlunami(BlunamiEngine loco, byte[] data)
+        {
+            int dataFound = -1;
+            if (loco.BluetoothLeDevice != null)
+            {
+                try
+                {
+                    byte[] readCVCommand = new BlunamiCommandBase().baseReadCVCommand;
+                    // to read Decoder type, this comes from CV256. We must change the 3rd byte to be 0x75 to start reading
+                    // CV256 and beyond. Since CV256 is the first cv in this new range, we just set the 4th byte to 0. If we read
+                    // CV257 instead, we'd set the 4th byte to 1. 
+                    readCVCommand[3] = 0x75;
+                    readCVCommand[4] = 0;
+                    var writer = new DataWriter();
+                    writer.WriteBytes(readCVCommand);
+
+                    if (loco.BlunamiCharactertisic != null)
+                    {
+                        GattWriteResult result = await loco.BlunamiCharactertisic.WriteValueWithResultAsync(writer.DetachBuffer());
+                        if (result.Status == GattCommunicationStatus.Success)
+                        {
+                            // Successfully wrote to Blunami. Now, we have to read what the result from the same characteristic
+                            GattReadResult readResult = await loco.BlunamiCharactertisic.ReadValueAsync(BluetoothCacheMode.Uncached);
+                            if (readResult.Status == GattCommunicationStatus.Success)
+                            {
+                                var reader = DataReader.FromBuffer(readResult.Value);
+                                byte[] input = new byte[reader.UnconsumedBufferLength];
+                                reader.ReadBytes(input);
+                                dataFound = input[5];
+                                // Utilize the data as needed
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Could not find Blunami Characteristic returning invalid dataFound");
+                    }
+
+                }
+                catch
+                {
+
+                }
+            }
+            else
+            {
+                Console.WriteLine("Could not find Blunami Device. Returning invalid dataFound");
+
+                dataFound = -1;
+            }
+            return dataFound;
+        }
+
+
+
+
+        public async Task<GattCharacteristic> GetBlunamiDCCCharacteristic(BlunamiEngine loco)
+        {
+            GattDeviceServicesResult result = await loco.BluetoothLeDevice.GetGattServicesAsync();
+            GattCharacteristic dccCharacteristic = null;
+            if (result.Status == GattCommunicationStatus.Success)
+            {
+                var services = result.Services;
+                foreach (var service in services)
+                {
+                    if (service.Uuid.ToString() == BlunamiCommandBase.blunamiServiceStr)
+                    {
+                        //Console.WriteLine(service.Uuid.ToString());
+                        GattCharacteristicsResult characteristicResult = await service.GetCharacteristicsAsync();
+
+                        if (result.Status == GattCommunicationStatus.Success)
+                        {
+                            var characteristics = characteristicResult.Characteristics;
+
+                            foreach (var characteristic in characteristics)
+                            {
+                                if (characteristic.Uuid.ToString() == BlunamiCommandBase.blunamiDCCCharacteristicStr)
+                                {
+                                    //Console.WriteLine(characteristic.Uuid.ToString());
+                                    dccCharacteristic = characteristic;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (dccCharacteristic == null)
+            {
+                Console.WriteLine("An error occured. Could not find Blunami Characteristic in BLE services list.");
+            }
+            return dccCharacteristic;
         }
 
         async Task WriteBlunamiDynamoGroupEffectCommand(BlunamiEngine loco)
@@ -232,11 +366,9 @@ namespace SharpBlunamiControl
 
                     var writer = new DataWriter();
                     writer.WriteBytes(baseCommand);
-                    var characteristic = await GetBlunamiDCCCharacteristic(loco.BluetoothLeDevice);
-
-                    if (characteristic != null)
+                    if (loco.BlunamiCharactertisic != null)
                     {
-                        GattWriteResult result = await characteristic.WriteValueWithResultAsync(writer.DetachBuffer());
+                        GattWriteResult result = await loco.BlunamiCharactertisic.WriteValueWithResultAsync(writer.DetachBuffer());
                         if (result.Status == GattCommunicationStatus.Success)
                         {
                             Console.WriteLine("Successfully wrote DynamoEffectPacket to train");
@@ -265,6 +397,9 @@ namespace SharpBlunamiControl
         public byte[] baseCommand = new byte[] { 0x02, 0x02, 0x00, 0x00, 0x00, 0x00 }; // replace third byte with engine ID
         public byte[] baseSpeedCommand = new byte[] { 0x02, 0x03, 0x00, 0x3F, 0x00, 0x00 }; // replace third byte with engine ID. Change the 4th bit to 0x3F if short digit, 5th bit to 0x3F if long digit. 
         public byte[] baseReadCVCommand = new byte[] { 0x03, 0x04, 0x00, 0x74, 0xFF, 0x01, 0x00 }; // replace FF with CV in Hex to read
+        public static int DCC_LONG_ADDRESS_CONSTANT = 49152;
+        public static string blunamiServiceStr = "f688fd00-da9a-2e8f-d003-ebcdcc259af9";
+        public static string blunamiDCCCharacteristicStr = "f688fd1d-da9a-2e8f-d003-ebcdcc259af9";
     }
 
     public class BlunamiEngine
@@ -350,6 +485,11 @@ namespace SharpBlunamiControl
             this.decoderType = decoderType;
             this.speed = speed;
 
+            Task.Run(async () =>
+            {
+              this.blunamiCharacteristic = await GetBlunamiDCCCharacteristic(bluetoothLEDevice);
+            }).GetAwaiter().GetResult();
+
             if (id > 98)
             {
                 this.usesLongAddress = true;
@@ -362,6 +502,43 @@ namespace SharpBlunamiControl
                 this.usesLongAddress = false;
             }
 
+        }
+
+        private async Task<GattCharacteristic> GetBlunamiDCCCharacteristic(BluetoothLEDevice bluetoothLEDevice)
+        {
+            GattDeviceServicesResult result = await bluetoothLEDevice.GetGattServicesAsync();
+            GattCharacteristic dccCharacteristic = null;
+            if (result.Status == GattCommunicationStatus.Success)
+            {
+                var services = result.Services;
+                foreach (var service in services)
+                {
+                    if (service.Uuid.ToString() == BlunamiCommandBase.blunamiServiceStr)
+                    {
+                        //Console.WriteLine(service.Uuid.ToString());
+                        GattCharacteristicsResult characteristicResult = await service.GetCharacteristicsAsync();
+
+                        if (result.Status == GattCommunicationStatus.Success)
+                        {
+                            var characteristics = characteristicResult.Characteristics;
+
+                            foreach (var characteristic in characteristics)
+                            {
+                                if (characteristic.Uuid.ToString() == BlunamiCommandBase.blunamiDCCCharacteristicStr)
+                                {
+                                    //Console.WriteLine(characteristic.Uuid.ToString());
+                                    dccCharacteristic = characteristic;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (dccCharacteristic == null)
+            {
+                Console.WriteLine("An error occured. Could not find Blunami Characteristic in BLE services list.");
+            }
+            return dccCharacteristic;
         }
 
         public BluetoothLEDevice BluetoothLeDevice

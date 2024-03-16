@@ -67,8 +67,7 @@ namespace SharpBlunamiControl
         }
 
 
-
-        async Task<GattCharacteristic> GetBlunamiDCCCharacteristic(BluetoothLEDevice device)
+        public async Task<GattCharacteristic> GetBlunamiDCCCharacteristic(BluetoothLEDevice device)
         {
             GattDeviceServicesResult result = await device.GetGattServicesAsync();
             GattCharacteristic dccCharacteristic = null;
@@ -77,7 +76,7 @@ namespace SharpBlunamiControl
                 var services = result.Services;
                 foreach (var service in services)
                 {
-                    if (service.Uuid.ToString() == blunamiServiceStr)
+                    if (service.Uuid.ToString() == BlunamiCommandBase.blunamiServiceStr)
                     {
                         //Console.WriteLine(service.Uuid.ToString());
                         GattCharacteristicsResult characteristicResult = await service.GetCharacteristicsAsync();
@@ -85,10 +84,10 @@ namespace SharpBlunamiControl
                         if (result.Status == GattCommunicationStatus.Success)
                         {
                             var characteristics = characteristicResult.Characteristics;
-                            
+
                             foreach (var characteristic in characteristics)
                             {
-                                if(characteristic.Uuid.ToString() == blunamiDCCCharacteristicStr)
+                                if (characteristic.Uuid.ToString() == BlunamiCommandBase.blunamiDCCCharacteristicStr)
                                 {
                                     //Console.WriteLine(characteristic.Uuid.ToString());
                                     dccCharacteristic = characteristic;
@@ -98,12 +97,14 @@ namespace SharpBlunamiControl
                     }
                 }
             }
-            if(dccCharacteristic == null)
+            if (dccCharacteristic == null)
             {
                 Console.WriteLine("An error occured. Could not find Blunami Characteristic in BLE services list.");
             }
             return dccCharacteristic;
         }
+
+
 
         public async Task<int> ReadShortDecoderAddress(BluetoothLEDevice device)
         {
@@ -233,7 +234,7 @@ namespace SharpBlunamiControl
                                                                          // 49152 is DCC Long address offset
                                                     //Console.WriteLine("CV18: " + CV18);
 
-                                                    dccAddress = (CV17 << 8) + CV18 - DCC_LONG_ADDRESS_CONSTANT;
+                                                    dccAddress = (CV17 << 8) + CV18 - BlunamiCommandBase.DCC_LONG_ADDRESS_CONSTANT;
                                                     
                                                     // This is only for communicating with Lionel devices. TMCC cannot handle 4 digit so we are just ignoring the last two values.
                                                     //dccAddress = dccAddress / 100; // get rid of the last two digits by dividing by 100 and forgetting the decimal portions

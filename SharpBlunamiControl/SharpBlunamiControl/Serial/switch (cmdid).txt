@@ -1,0 +1,178 @@
+switch (cmdid)
+{
+
+    case (int)TMCCCommandType.CT_ACTION:
+        {
+            switch (dataid)
+            {
+                case (int)EngineCommandParams.EC_BLOW_HORN_1:
+                    {
+                        //loco.dynamoFlags |= BlunamiEngineEffectCommandParams.LONG_WHISTLE;
+                        //loco.whistleOn = true;
+                        lastPressTime = timer;
+                        if (debugString)
+                            Console.WriteLine("Horn pressed");
+                        break;
+                    }
+
+                case (int)EngineCommandParams.EC_RING_BELL:
+                    {
+                        bellButtonPressed = true;
+                        lastPressTime = timer;
+                        if (debugString)
+                            Console.WriteLine("Bell pressed\n");
+                        break;
+                    }
+
+                case (int)EngineCommandParams.EC_TOGGLE_DIRECTION:
+                    {
+                        directionButtonPressed = true;
+                        lastPressTime = timer;
+                        if (debugString)
+                            Console.WriteLine("Toggle direction pressed\n");
+                        break;
+                    }
+
+                case (int)EngineCommandParams.EC_AUX_1_OPTION_1:
+                    {
+                        shortWhistleButtonPressed = true;
+                        lastPressTime = timer;
+                        if (debugString)
+                            Console.WriteLine("Aux1 pressed\n");
+                        break;
+                    }
+
+                case (int)EngineCommandParams.EC_AUX_2_OPTION_1:
+                    {
+                        headlightButtonPressed = true;
+                        lastPressTime = timer;
+                        if (debugString)
+                            Console.WriteLine("Aux2 pressed\n");
+                        break;
+                    }
+
+                case (int)EngineCommandParams.EC_OPEN_FRONT_COUPLER:
+                    {
+                        frontCouplerButtonPressed = true;
+                        lastPressTime = timer;
+                        if (debugString)
+                            Console.WriteLine("Front Coupler pressed\n");
+                        break;
+                    }
+
+                case (int)EngineCommandParams.EC_OPEN_REAR_COUPLER:
+                    {
+                        rearCouplerButtonPressed = true;
+                        lastPressTime = timer;
+                        if (debugString)
+                            Console.WriteLine("Rear Coupler pressed\n");
+                        break;
+                    }
+
+                case (int)EngineCommandParams.EC_BOOST_SPEED:
+                    {
+                        boostButtonPressed = true;
+                        lastPressTime = timer;
+                        if (debugString)
+                            Console.WriteLine("Boost pressed\n");
+                        break;
+                    }
+
+                case (int)EngineCommandParams.EC_BRAKE_SPEED:
+                    {
+                        brakeButtonPressed = true;
+                        lastPressTime = timer;
+                        if (debugString)
+                            Console.WriteLine("Brake pressed\n");
+                        break;
+                    }
+
+                default:
+                    {
+                        dataid &= (int)EngineCommandParams.EC_NUMERIC_MASK;
+                        if (debugString)
+                            Console.WriteLine("Numerical pressed: %d\n", dataid);
+                        break;
+
+                        switch (dataid)
+                        {
+                            case 0:
+                                break;
+                            case 1:
+                                break;
+                            case 2:
+                                break;
+                            case 3:
+                                break;
+                            case 4:
+                                break;
+                            case 5:
+                                break;
+                            case 6:
+                                break;
+                            case 7:
+                                break;
+                            case 8:
+                                break;
+                            case 9:
+                                break;
+                        }
+                    }
+
+
+
+            }
+            break;
+        }
+
+    case (int)TMCCCommandType.CT_RELATIVE_SPEED:
+        {
+            if (debugString)
+                Console.WriteLine("Speed command\n");
+
+            switch (dataid)
+            {
+                case 0xA:
+                    //loco.speed += 5;
+                    break;
+                case 0x9:
+                    //loco.speed += 4;
+                    break;
+                case 0x8:
+                    //loco.speed += 3;
+                    break;
+                case 0x7:
+                    //loco.speed += 2;
+                    break;
+                case 0x6:
+                    //loco.speed += 1;
+                    break;
+                case 0x5:
+                    // loco.speed += 0;
+                    break;
+                case 0x4:
+                    // loco.speed += -1;
+                    break;
+                case 0x3:
+                    //  loco.speed += -2;
+                    break;
+                case 0x2:
+                    // loco.speed += -3;
+                    break;
+                case 0x1:
+                    //  loco.speed += -4;
+                    break;
+                case 0x0:
+                    //  loco.speed += -5;
+                    break;
+            }
+
+            //if (loco.speed > 126)
+            // loco.speed = 126;
+            //if (loco.speed < 0)
+            // loco.speed = 0;
+
+            // WriteBlunamiSpeedCommand(loco);
+            break;
+        }
+}
