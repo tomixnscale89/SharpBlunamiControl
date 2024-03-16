@@ -38,6 +38,9 @@
   <PropertyGroup>
     <StartupObject />
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>tmcc.ico</ApplicationIcon>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=1.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.1.1.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
@@ -97,8 +100,8 @@
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="GUI\Utility.cs" />
-    <Compile Include="RadialController.cs" />
-    <Compile Include="RadialControllerInterop.cs" />
+    <Compile Include="Control\RadialController.cs" />
+    <Compile Include="Control\RadialControllerInterop.cs" />
     <Compile Include="Serial\BlunamiSerial.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -114,6 +117,9 @@
     <EmbeddedResource Include="GUI\KnobControl.resx">
       <DependentUpon>KnobControl.cs</DependentUpon>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="tmcc.ico" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\System.Runtime.WindowsRuntime.4.7.0\build\net461\System.Runtime.WindowsRuntime.targets" Condition="Exists('..\packages\System.Runtime.WindowsRuntime.4.7.0\build\net461\System.Runtime.WindowsRuntime.targets')" />
