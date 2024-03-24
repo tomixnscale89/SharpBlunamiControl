@@ -397,6 +397,104 @@ namespace SharpBlunamiControl
             }
 
         }
+
+        async Task WriteBlunamiSpeedCommand(BlunamiEngine loco)
+        {
+            if (loco.BluetoothLeDevice != null)
+            {
+                try
+                {
+                    byte[] baseCommand = new BlunamiCommandBase().baseSpeedCommand;
+
+                    switch (loco.DecoderType)
+                    {
+                        // for 2200 decoders, the byte 2 should be 0x02. 
+                        case (int)BlunamiEngineTypes.BLU2200_STEAM:
+                        case (int)BlunamiEngineTypes.BLU2200_DIESEL_ALCO:
+                        case (int)BlunamiEngineTypes.BLU2200_DIESEL_BALDWIN:
+                        case (int)BlunamiEngineTypes.BLU2200_DIESEL_EMD2:
+                        case (int)BlunamiEngineTypes.BLU2200_DISESL_EMD:
+                        case (int)BlunamiEngineTypes.BLU2200_DISESL_GE:
+                        case (int)BlunamiEngineTypes.BLU2200_ELECTRIC:
+                            {
+                                baseCommand[1] = 0x03;
+                                break;
+                            }
+                        // for 4408 decoders, the byte 2 should be 0x03. 
+                        case (int)BlunamiEngineTypes.BLU4408_STEAM:
+                        case (int)BlunamiEngineTypes.BLU4408_DIESEL_ALCO:
+                        case (int)BlunamiEngineTypes.BLU4408_DIESEL_BALDWIN:
+                        case (int)BlunamiEngineTypes.BLU4408_DIESEL_EMD2:
+                        case (int)BlunamiEngineTypes.BLU4408_DISESL_EMD:
+                        case (int)BlunamiEngineTypes.BLU4408_DISESL_GE:
+                        case (int)BlunamiEngineTypes.BLU4408_ELECTRIC:
+                            {
+                                baseCommand[1] = 0x04;
+                                break;
+                            }
+
+                        default:
+                            Console.WriteLine("Failure to determine Decoder type: WriteBlunamiSpeedCommand");
+                            return;
+
+                    }
+
+                    if (loco.UsesLongAddress)
+                    {
+                        baseCommand[2] = (byte)loco.CV17;
+                        baseCommand[3] = (byte)loco.CV18;
+                        baseCommand[4] = 0x3F;
+
+                        if (loco.Direction)
+                        {
+                            baseCommand[5] = (byte)(0x80 + loco.Speed);
+                        }
+                        else
+                        {
+                            baseCommand[5] = (byte)(0x00 + loco.Speed);
+                        }
+
+                    }
+                    else
+                    {
+                        baseCommand[2] = (byte)loco.Id;
+                        baseCommand[3] = 0x3F;
+
+                        if (loco.Direction)
+                        {
+                            baseCommand[4] = (byte)(0x80 + loco.Speed);
+                        }
+                        else
+                        {
+                            baseCommand[4] = (byte)(0x00 + loco.Speed);
+                        }
+
+                    }
+
+                    var writer = new DataWriter();
+                    writer.WriteBytes(baseCommand);
+                    if (loco.BlunamiCharactertisic != null)
+                    {
+                        GattWriteResult result = await loco.BlunamiCharactertisic.WriteValueWithResultAsync(writer.DetachBuffer());
+                        if (result.Status == GattCommunicationStatus.Success)
+                        {
+                            Console.WriteLine("Successfully wrote SpeedPacket to train");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Could not find Blunami Characteristic returning invalid shortID");
+
+                    }
+
+                }
+                catch
+                {
+
+                }
+            }
+
+        }
     }
 
 
@@ -506,14 +604,17 @@ namespace SharpBlunamiControl
                 this.CV17Value = (this.id + 49152) >> 8;
                 this.CV18Value = (this.id + 49152) & 0xFF;
                 //Console.WriteLine("CV17{0},CV18{1}", this.CV17Value, this.CV18Value);
+                // This is only for communicating with Lionel devices. TMCC cannot handle 4 digit so we are just ignoring the last two values.
+                this.TMCCIDVal = this.Id / 100; // get rid of the last two digits by dividing by 100 and forgetting the decimal portions
             }
             else
             {
                 this.usesLongAddress = false;
+                // This is only for communicating with Lionel devices. TMCC cannot handle 4 digit so we are just ignoring the last two values.
+                this.TMCCIDVal = this.Id; // get rid of the last two digits by dividing by 100 and forgetting the decimal portions
             }
 
-            // This is only for communicating with Lionel devices. TMCC cannot handle 4 digit so we are just ignoring the last two values.
-            this.TMCCIDVal = this.Id / 100; // get rid of the last two digits by dividing by 100 and forgetting the decimal portions
+            
 
         }
 

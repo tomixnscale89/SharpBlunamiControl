@@ -93,8 +93,10 @@ namespace SharpBlunamiControl
 
         float timer;
         float lastPressTime;
-        float buttonHoldInterval = 100;
+        float buttonHoldInterval = 115;
         bool debugString = true;
+
+        Tuple<int, int, int> previousTMCCPacket;
 
         bool SelectSerialPort()
         {
@@ -151,6 +153,7 @@ namespace SharpBlunamiControl
         {
             serialPort.DataReceived += new SerialDataReceivedEventHandler(SerialPort_DataReceived);
             serialPort.ReadTimeout = 500;
+            serialPort.ReceivedBytesThreshold = 3;
             serialPort.Open();
         }
 
@@ -161,6 +164,7 @@ namespace SharpBlunamiControl
 
         private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
+            stopWatch.Restart();
             byte[] buf = new byte[3];
             try
             {
@@ -213,6 +217,51 @@ namespace SharpBlunamiControl
                                         }
                                     case (int)TMCCCommandType.CT_RELATIVE_SPEED:
                                         {
+                                            Console.WriteLine("Speed packet");
+                                            switch (TMCCPacket.Item2)
+                                            {
+                                                case 0xA:
+                                                    blunami.Speed += 5;
+                                                    break;
+                                                case 0x9:
+                                                    blunami.Speed += 4;
+                                                    break;
+                                                case 0x8:
+                                                    blunami.Speed += 3;
+                                                    break;
+                                                case 0x7:
+                                                    blunami.Speed += 2;
+                                                    break;
+                                                case 0x6:
+                                                    blunami.Speed += 1;
+                                                    break;
+                                                case 0x5:
+                                                    blunami.Speed += 0;
+                                                    break;
+                                                case 0x4:
+                                                    blunami.Speed += -1;
+                                                    break;
+                                                case 0x3:
+                                                    blunami.Speed += -2;
+                                                    break;
+                                                case 0x2:
+                                                    blunami.Speed += -3;
+                                                    break;
+                                                case 0x1:
+                                                    blunami.Speed += -4;
+                                                    break;
+                                                case 0x0:
+                                                    blunami.Speed += -5;
+                                                    break;
+                                            }
+
+                                            if (blunami.Speed > 126)
+                                                blunami.Speed = 126;
+                                            if (blunami.Speed < 0)
+                                                blunami.Speed = 0;
+
+                                            WriteBlunamiSpeedCommand(blunami);
+
                                             break;
                                         }
                                     case (int)TMCCCommandType.CT_ABSOLUTE_SPEED:
@@ -220,6 +269,7 @@ namespace SharpBlunamiControl
                                             break;
                                         }
                                 }
+                                
                             }
                         }
                     }
@@ -263,13 +313,19 @@ namespace SharpBlunamiControl
         {
             switch (dataid)
             {
+               
                 case (int)EngineCommandParams.EC_BLOW_HORN_1:
                 case (int)EngineCommandParams.EC_BLOW_HORN_2:
                     {
+
                         loco.DynamoFlags |= BlunamiEngineEffectCommandParams.LONG_WHISTLE;
                         loco.Whistle = true;
                         whistleButtonPressed = true;
-                        lastPressTime = stopWatch.ElapsedMilliseconds;
+                        Task.Run(async () =>
+                        {
+                            await WriteBlunamiDynamoGroupEffectCommand(loco);
+
+                        }).GetAwaiter().GetResult();
                         if (debugString)
                             Console.WriteLine("Horn pressed");
                         break;
@@ -278,7 +334,6 @@ namespace SharpBlunamiControl
                 case (int)EngineCommandParams.EC_RING_BELL:
                     {
                         bellButtonPressed = true;
-                        lastPressTime = stopWatch.ElapsedMilliseconds;
                         if (debugString)
                             Console.WriteLine("Bell pressed\n");
                         break;
@@ -287,7 +342,6 @@ namespace SharpBlunamiControl
                 case (int)EngineCommandParams.EC_TOGGLE_DIRECTION:
                     {
                         directionButtonPressed = true;
-                        lastPressTime = stopWatch.ElapsedMilliseconds;
                         if (debugString)
                             Console.WriteLine("Toggle direction pressed\n");
                         break;
@@ -296,7 +350,6 @@ namespace SharpBlunamiControl
                 case (int)EngineCommandParams.EC_AUX_1_OPTION_1:
                     {
                         shortWhistleButtonPressed = true;
-                        lastPressTime = stopWatch.ElapsedMilliseconds;
                         if (debugString)
                             Console.WriteLine("Aux1 pressed\n");
                         break;
@@ -305,7 +358,6 @@ namespace SharpBlunamiControl
                 case (int)EngineCommandParams.EC_AUX_2_OPTION_1:
                     {
                         headlightButtonPressed = true;
-                        lastPressTime = (float)stopWatch.Elapsed.TotalMilliseconds;
                         if (debugString)
                             Console.WriteLine("Aux2 pressed\n");
                         break;
@@ -314,7 +366,6 @@ namespace SharpBlunamiControl
                 case (int)EngineCommandParams.EC_OPEN_FRONT_COUPLER:
                     {
                         frontCouplerButtonPressed = true;
-                        lastPressTime = stopWatch.ElapsedMilliseconds;
                         if (debugString)
                             Console.WriteLine("Front Coupler pressed\n");
                         break;
@@ -323,7 +374,6 @@ namespace SharpBlunamiControl
                 case (int)EngineCommandParams.EC_OPEN_REAR_COUPLER:
                     {
                         rearCouplerButtonPressed = true;
-                        lastPressTime = stopWatch.ElapsedMilliseconds;
                         if (debugString)
                             Console.WriteLine("Rear Coupler pressed\n");
                         break;
@@ -332,7 +382,6 @@ namespace SharpBlunamiControl
                 case (int)EngineCommandParams.EC_BOOST_SPEED:
                     {
                         boostButtonPressed = true;
-                        lastPressTime = stopWatch.ElapsedMilliseconds;
                         if (debugString)
                             Console.WriteLine("Boost pressed\n");
                         break;
@@ -341,7 +390,6 @@ namespace SharpBlunamiControl
                 case (int)EngineCommandParams.EC_BRAKE_SPEED:
                     {
                         brakeButtonPressed = true;
-                        lastPressTime = stopWatch.ElapsedMilliseconds;
                         if (debugString)
                             Console.WriteLine("Brake pressed\n");
                         break;
@@ -380,6 +428,7 @@ namespace SharpBlunamiControl
                     }
 
             }
+            lastPressTime = (float)stopWatch.Elapsed.TotalMilliseconds;
         }
 
         private Tuple<int , int, int> DetermineTMCCCommand(byte[] buf)
@@ -404,7 +453,7 @@ namespace SharpBlunamiControl
                     //std::cout << "engine id: " << engineid << std::endl;
                     //if (engineid == loco.id) // if our command matches a known loco id
                     //{
-                    int cmdid = (int)buf[2] & 0b01100000;
+                    int cmdid = ((int)buf[2] & 0b01100000) >> 5;
                     int dataid = (int)buf[2] & 0b00011111;
 
                     commandData = new Tuple<int, int, int>(cmdid, dataid, engineid);

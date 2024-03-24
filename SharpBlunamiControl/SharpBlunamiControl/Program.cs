@@ -53,7 +53,7 @@ namespace SharpBlunamiControl
                 BlunamiControl.FoundBluetoothDevicesNames.ForEach(i => Console.WriteLine("{0}\t", i));
                 //Console.WriteLine("Found the following devices.. ok to connect?");
 
-                
+
                 //Console.WriteLine("Wanting to exit");
 
                 //Console.ReadLine();
@@ -97,14 +97,14 @@ namespace SharpBlunamiControl
                 while (!BlunamiControl.wantsToExit)
                 {
 
+
+                    Task.Run(async () =>
+                    {
+                    //Console.WriteLine(BlunamiControl.stopWatch.Elapsed.TotalMilliseconds - BlunamiControl.lastPressTime);
                     if (BlunamiControl.stopWatch.Elapsed.TotalMilliseconds - BlunamiControl.lastPressTime >= BlunamiControl.buttonHoldInterval)
                     {
-                        Task.Run(async () =>
+                        if (BlunamiControl.lastUsedEngine != null && !BlunamiControl.stopWatch.IsRunning)
                         {
-                            //Console.WriteLine(BlunamiControl.stopWatch.Elapsed.TotalMilliseconds - BlunamiControl.lastPressTime);
-
-                            if (BlunamiControl.lastUsedEngine != null)
-                            {
                                 if (BlunamiControl.lastUsedEngine.Whistle)
                                 {
                                     // printf("Horn stopped\n");
@@ -118,71 +118,82 @@ namespace SharpBlunamiControl
                                 }
 
                                 if (BlunamiControl.bellButtonPressed)
-                                {
-                                    //printf("Short Horn button stopped\n");
-                                    //loco.dynamoFlags ^= BlunamiEngineEffectCommandParams::SHORT_WHISTLE;
-                                    //Console.WriteLine("Blunami Short Whistle state %d\n", loco.shortWhistleOn);
-                                    BlunamiControl.lastUsedEngine.DynamoFlags ^= BlunamiEngineEffectCommandParams.BELL;
-                                    await BlunamiControl.WriteBlunamiDynamoGroupEffectCommand(BlunamiControl.lastUsedEngine);
-                                    Console.WriteLine("{0}, Bell: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.Headlight);
+                            {
+                                //printf("Short Horn button stopped\n");
+                                //loco.dynamoFlags ^= BlunamiEngineEffectCommandParams::SHORT_WHISTLE;
+                                //Console.WriteLine("Blunami Short Whistle state %d\n", loco.shortWhistleOn);
+                                BlunamiControl.lastUsedEngine.DynamoFlags ^= BlunamiEngineEffectCommandParams.BELL;
+                                await BlunamiControl.WriteBlunamiDynamoGroupEffectCommand(BlunamiControl.lastUsedEngine);
+                                Console.WriteLine("{0}, Bell: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.Headlight);
 
-                                    Console.WriteLine("Bell stopped");
-                                    //WriteBlunamiDynamoGroupEffectCommand(loco);
+                                Console.WriteLine("Bell stopped");
+                                //WriteBlunamiDynamoGroupEffectCommand(loco);
 
-                                    BlunamiControl.bellButtonPressed = false;
-                                }
+                                BlunamiControl.bellButtonPressed = false;
+                            }
 
 
-                                if (BlunamiControl.headlightButtonPressed)
-                                {
-                                    BlunamiControl.lastUsedEngine.Headlight = !BlunamiControl.lastUsedEngine.Headlight;
-                                    await BlunamiControl.WriteBlunamiDynamoGroupEffectCommand(BlunamiControl.lastUsedEngine);
-                                    Console.WriteLine("{0}, Headlight: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.Headlight);
+                            if (BlunamiControl.headlightButtonPressed)
+                            {
+                                BlunamiControl.headlightButtonPressed = false;
 
-                                    BlunamiControl.headlightButtonPressed = false;
-                                }
-
-                                if (BlunamiControl.directionButtonPressed)
-                                {
-                                    Console.WriteLine("{0}, Direction: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.Direction);
-                                    BlunamiControl.lastUsedEngine.Direction = !BlunamiControl.lastUsedEngine.Direction;
-                                    BlunamiControl.directionButtonPressed = false;
-
-                                }
-
+                                BlunamiControl.lastUsedEngine.Headlight = !BlunamiControl.lastUsedEngine.Headlight;
+                                await BlunamiControl.WriteBlunamiDynamoGroupEffectCommand(BlunamiControl.lastUsedEngine);
+                                Console.WriteLine("{0}, Headlight: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.Headlight);
+                                Console.WriteLine("Button Stopped");
 
                             }
+
+                            if (BlunamiControl.directionButtonPressed)
+                            {
+                                Console.WriteLine("{0}, Direction: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.Direction);
+                                BlunamiControl.lastUsedEngine.Direction = !BlunamiControl.lastUsedEngine.Direction;
+                                BlunamiControl.directionButtonPressed = false;
+
+                            }
+
+
                         }
-                        ).GetAwaiter().GetResult();
+                            
+                            else
+                        {
+                            BlunamiControl.stopWatch.Stop();
+                        }
+
+
                     }
 
                     }
+                    ).GetAwaiter().GetResult();
 
                 }
 
+            }
+
+            BlunamiControl.stopWatch.Stop();
 
 
 
-                //Console.ReadLine();
+            //Console.ReadLine();
 
-                //Task.Run(async () =>
-                //{
-                //    Console.WriteLine("Whistle Off");
+            //Task.Run(async () =>
+            //{
+            //    Console.WriteLine("Whistle Off");
 
-                //    for (int i = 0; i < BlunamiControl.FoundBluetoothDevices.Count; i++)
-                //    {
-                //        BlunamiControl.FoundBlunamiDevices[i].DynamoFlags ^= BlunamiEngineEffectCommandParams.LONG_WHISTLE;
-                //        await BlunamiControl.WriteBlunamiDynamoGroupEffectCommand(BlunamiControl.FoundBlunamiDevices[i]);
-                //    }
+            //    for (int i = 0; i < BlunamiControl.FoundBluetoothDevices.Count; i++)
+            //    {
+            //        BlunamiControl.FoundBlunamiDevices[i].DynamoFlags ^= BlunamiEngineEffectCommandParams.LONG_WHISTLE;
+            //        await BlunamiControl.WriteBlunamiDynamoGroupEffectCommand(BlunamiControl.FoundBlunamiDevices[i]);
+            //    }
 
-                //}).GetAwaiter().GetResult();
+            //}).GetAwaiter().GetResult();
 
 
             //Console.ReadLine();
             BlunamiControl.stopWatch.Stop();
 
             BlunamiControl.FoundBluetoothDevices.ForEach(i => i.Dispose()); // disconnect and clean up all remaining BLE connections
-            if(BlunamiControl.serialEnabled)
+            if (BlunamiControl.serialEnabled)
                 BlunamiControl.ClosePort(); // close Serial port
 
             //Application.EnableVisualStyles();
@@ -190,7 +201,7 @@ namespace SharpBlunamiControl
             //Application.Run(new Form1());
         }
 
-        
+
     }
 
 }
