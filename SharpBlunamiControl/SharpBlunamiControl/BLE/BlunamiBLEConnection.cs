@@ -347,5 +347,10 @@ namespace SharpBlunamiControl
             }
             return DecoderType;
         }
+
+        public async Task ResetBlunamiFunctions()
+        {
+            
+            }
+        }
     }
-}

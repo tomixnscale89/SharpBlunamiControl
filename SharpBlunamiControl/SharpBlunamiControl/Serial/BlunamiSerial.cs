@@ -87,10 +87,13 @@ namespace SharpBlunamiControl
         bool brakeButtonPressed = false;
         bool directionButtonPressed = false;
 
+        //
         int lastFoundTMCCID;
+        BlunamiEngine lastUsedEngine;
+
         float timer;
         float lastPressTime;
-        float buttonHoldInterval = 0.2f;
+        float buttonHoldInterval = 100;
         bool debugString = true;
 
         bool SelectSerialPort()
@@ -147,6 +150,7 @@ namespace SharpBlunamiControl
         void ConfigureSerialPort()
         {
             serialPort.DataReceived += new SerialDataReceivedEventHandler(SerialPort_DataReceived);
+            serialPort.ReadTimeout = 500;
             serialPort.Open();
         }
 
@@ -158,56 +162,85 @@ namespace SharpBlunamiControl
         private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             byte[] buf = new byte[3];
-            for(int i = 0; i < 3; i++)
+            try
             {
-                buf[i] = (byte)serialPort.ReadByte();
-            }
-            if(debugString)
-                Console.WriteLine("Hex: " + BitConverter.ToString(buf));
-            if (buf.Length == 3)
-            {
-                /*
-                 * Idea for this:
-                 * 1. TMCC Packet comes over serial. Parse it.
-                 * 2. Deconstruct the command byte, data byte, and engine ID.
-                 * 3. Store the engine ID, and then go set which buttons were pressed.
-                 * 4. back in the main loop, when a button is pressed, we check all of our
-                 * BlunamiEngine list to find a engine that has the same ID. If it exists,
-                 * then connect and send the data over.
-                 * 
-                 */
-                var TMCCPacket = DetermineTMCCCommand(buf);
-                lastFoundTMCCID = TMCCPacket.Item3;
-                switch (TMCCPacket.Item1)
+                for (int i = 0; i < 3; i++)
                 {
-                    case (int)TMCCCommandType.CT_ACTION:
-                        {
-                            SetTMCCButtonSates(TMCCPacket.Item2);
-                            break;
-                        }
-                    case (int)TMCCCommandType.CT_RELATIVE_SPEED:
-                        {
-                            break;
-                        }
-                    case (int)TMCCCommandType.CT_ABSOLUTE_SPEED:
-                        {
-                            break;
-                        }
+                    buf[i] = (byte)serialPort.ReadByte();
                 }
 
+                if (debugString)
+                    Console.WriteLine("Hex: " + BitConverter.ToString(buf));
+                if (buf.Length == 3)
+                {
+                    /*
+                     * Idea for this:
+                     * 1. TMCC Packet comes over serial. Parse it.
+                     * 2. Deconstruct the command byte, data byte, and engine ID.
+                     * 3. Store the engine ID, and then go set which buttons were pressed.
+                     * 4. back in the main loop, when a button is pressed, we check all of our
+                     * BlunamiEngine list to find a engine that has the same ID. If it exists,
+                     * then connect and send the data over.
+                     * 
+                     */
+
+                    // Item1 - CommandType
+                    // Item2 - TMCC ID
+                    // Item3 - Data ID
+
+                    var TMCCPacket = DetermineTMCCCommand(buf);
+
+                    if (TMCCPacket.Item2 == 0xFF & TMCCPacket.Item3 == 0xFF)
+                    {
+                        //Console.WriteLine("TMCCPacket.Item2 {0} TMCCPacket.Item3 {1}", TMCCPacket.Item2, TMCCPacket.Item3);
+                        Console.WriteLine("Program now exiting....");
+                        wantsToExit = true; // exit thread
+                    }
+                    else
+                    {
+                        lastFoundTMCCID = TMCCPacket.Item3;
+                        foreach (var blunami in FoundBlunamiDevices)
+                        {
+                            if (blunami.TMCCID == lastFoundTMCCID)
+                            {
+                                lastUsedEngine = blunami;
+                                switch (TMCCPacket.Item1)
+                                {
+                                    case (int)TMCCCommandType.CT_ACTION:
+                                        {
+                                            SetTMCCButtonSates(TMCCPacket.Item2, blunami);
+                                            break;
+                                        }
+                                    case (int)TMCCCommandType.CT_RELATIVE_SPEED:
+                                        {
+                                            break;
+                                        }
+                                    case (int)TMCCCommandType.CT_ABSOLUTE_SPEED:
+                                        {
+                                            break;
+                                        }
+                                }
+                            }
+                        }
+                    }
+                    
+                }
             }
-                
+     
+            catch (TimeoutException)
+            {
+                Console.WriteLine("Button's not pressed");
+            }
+            
         }
 
-        void SetTMCCButtonSates(int dataid)
+        void TestStates(int dataid)
         {
             switch (dataid)
             {
                 case (int)EngineCommandParams.EC_BLOW_HORN_1:
                 case (int)EngineCommandParams.EC_BLOW_HORN_2:
                     {
-                        //loco.dynamoFlags |= BlunamiEngineEffectCommandParams.LONG_WHISTLE;
-                        //loco.whistleOn = true;
                         whistleButtonPressed = true;
                         lastPressTime = timer;
                         if (debugString)
@@ -223,11 +256,38 @@ namespace SharpBlunamiControl
                             Console.WriteLine("Bell pressed\n");
                         break;
                     }
+            }
+        }
+
+        void SetTMCCButtonSates(int dataid, BlunamiEngine loco)
+        {
+            switch (dataid)
+            {
+                case (int)EngineCommandParams.EC_BLOW_HORN_1:
+                case (int)EngineCommandParams.EC_BLOW_HORN_2:
+                    {
+                        loco.DynamoFlags |= BlunamiEngineEffectCommandParams.LONG_WHISTLE;
+                        loco.Whistle = true;
+                        whistleButtonPressed = true;
+                        lastPressTime = stopWatch.ElapsedMilliseconds;
+                        if (debugString)
+                            Console.WriteLine("Horn pressed");
+                        break;
+                    }
+
+                case (int)EngineCommandParams.EC_RING_BELL:
+                    {
+                        bellButtonPressed = true;
+                        lastPressTime = stopWatch.ElapsedMilliseconds;
+                        if (debugString)
+                            Console.WriteLine("Bell pressed\n");
+                        break;
+                    }
 
                 case (int)EngineCommandParams.EC_TOGGLE_DIRECTION:
                     {
                         directionButtonPressed = true;
-                        lastPressTime = timer;
+                        lastPressTime = stopWatch.ElapsedMilliseconds;
                         if (debugString)
                             Console.WriteLine("Toggle direction pressed\n");
                         break;
@@ -236,7 +296,7 @@ namespace SharpBlunamiControl
                 case (int)EngineCommandParams.EC_AUX_1_OPTION_1:
                     {
                         shortWhistleButtonPressed = true;
-                        lastPressTime = timer;
+                        lastPressTime = stopWatch.ElapsedMilliseconds;
                         if (debugString)
                             Console.WriteLine("Aux1 pressed\n");
                         break;
@@ -245,7 +305,7 @@ namespace SharpBlunamiControl
                 case (int)EngineCommandParams.EC_AUX_2_OPTION_1:
                     {
                         headlightButtonPressed = true;
-                        lastPressTime = timer;
+                        lastPressTime = (float)stopWatch.Elapsed.TotalMilliseconds;
                         if (debugString)
                             Console.WriteLine("Aux2 pressed\n");
                         break;
@@ -254,7 +314,7 @@ namespace SharpBlunamiControl
                 case (int)EngineCommandParams.EC_OPEN_FRONT_COUPLER:
                     {
                         frontCouplerButtonPressed = true;
-                        lastPressTime = timer;
+                        lastPressTime = stopWatch.ElapsedMilliseconds;
                         if (debugString)
                             Console.WriteLine("Front Coupler pressed\n");
                         break;
@@ -263,7 +323,7 @@ namespace SharpBlunamiControl
                 case (int)EngineCommandParams.EC_OPEN_REAR_COUPLER:
                     {
                         rearCouplerButtonPressed = true;
-                        lastPressTime = timer;
+                        lastPressTime = stopWatch.ElapsedMilliseconds;
                         if (debugString)
                             Console.WriteLine("Rear Coupler pressed\n");
                         break;
@@ -272,7 +332,7 @@ namespace SharpBlunamiControl
                 case (int)EngineCommandParams.EC_BOOST_SPEED:
                     {
                         boostButtonPressed = true;
-                        lastPressTime = timer;
+                        lastPressTime = stopWatch.ElapsedMilliseconds;
                         if (debugString)
                             Console.WriteLine("Boost pressed\n");
                         break;
@@ -281,7 +341,7 @@ namespace SharpBlunamiControl
                 case (int)EngineCommandParams.EC_BRAKE_SPEED:
                     {
                         brakeButtonPressed = true;
-                        lastPressTime = timer;
+                        lastPressTime = stopWatch.ElapsedMilliseconds;
                         if (debugString)
                             Console.WriteLine("Brake pressed\n");
                         break;
@@ -328,19 +388,29 @@ namespace SharpBlunamiControl
             {
                 //printf("TMCC Byte\n");
                 //std::cout << std::bitset<8>((int)data[1]) << std::endl;
+                Tuple<int, int, int> commandData;
 
-                int id_0 = ((int)buf[1] & 0b00111111) << 1;
-                int id_1 = (((int)buf[2] & 0b10000000) >> 7) & 1;
-                int engineid = id_0 | id_1;
+                if (buf[1] == 0xFF & buf[2] == 0xFF)
+                {
+                   commandData = new Tuple<int, int, int>(buf[0], buf[1], buf[2]);
+                }
+                else
+                {
+                    int id_0 = ((int)buf[1] & 0b00111111) << 1;
+                    int id_1 = (((int)buf[2] & 0b10000000) >> 7) & 1;
+                    int engineid = id_0 | id_1;
 
-                //if (true)
-                //std::cout << "engine id: " << engineid << std::endl;
-                //if (engineid == loco.id) // if our command matches a known loco id
-                //{
-                int cmdid = (int)buf[2] & 0b01100000;
-                int dataid = (int)buf[2] & 0b00011111;
+                    //if (true)
+                    //std::cout << "engine id: " << engineid << std::endl;
+                    //if (engineid == loco.id) // if our command matches a known loco id
+                    //{
+                    int cmdid = (int)buf[2] & 0b01100000;
+                    int dataid = (int)buf[2] & 0b00011111;
 
-                var commandData = new Tuple<int, int,int>(cmdid, dataid, engineid);
+                    commandData = new Tuple<int, int, int>(cmdid, dataid, engineid);
+                }
+
+                
                 return commandData;
             }
             else

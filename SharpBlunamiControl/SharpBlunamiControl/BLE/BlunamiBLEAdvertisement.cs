@@ -14,14 +14,22 @@ namespace SharpBlunamiControl
     {
         List<ulong> BluetoothDeviceAddresses = new List<ulong> { };
         List<string> FoundBluetoothDevicesNames = new List<string> { };
+
+        ulong addressFromScanResponse;
+
+
+        //Dictionary<BluetoothLEAdvertisementReceivedEventArgs, BluetoothLEAdvertisementReceivedEventArgs> events = new Dictionary<BluetoothLEAdvertisementReceivedEventArgs, BluetoothLEAdvertisementReceivedEventArgs>;
         private async void BlunamiBLEAdvertisementSetup(BluetoothLEAdvertisementWatcher watcher)
         {
 
             var manufacturerData = new BluetoothLEManufacturerData();
             // Then, set the company ID for the manufacturer data. Here use the Blunami Manufacturer (Verifone Systems): 0x200
-            manufacturerData.CompanyId = 0x200;
+            //manufacturerData.CompanyId = 0x200;
 
-            watcher.AdvertisementFilter.Advertisement.ManufacturerData.Add(manufacturerData);
+            //watcher.AllowExtendedAdvertisements = true;
+            watcher.ScanningMode = BluetoothLEScanningMode.Active;
+
+            //watcher.AdvertisementFilter.Advertisement.ManufacturerData.Add(manufacturerData);
 
             // Part 1B: Configuring the signal strength filter for proximity scenarios
 
@@ -29,11 +37,11 @@ namespace SharpBlunamiControl
             // Please adjust these values if you cannot receive any advertisement 
             // Set the in-range threshold to -70dBm. This means advertisements with RSSI >= -70dBm 
             // will start to be considered "in-range".
-            watcher.SignalStrengthFilter.InRangeThresholdInDBm = -70;
+            watcher.SignalStrengthFilter.InRangeThresholdInDBm = -75;
 
             // Set the out-of-range threshold to -75dBm (give some buffer). Used in conjunction with OutOfRangeTimeout
             // to determine when an advertisement is no longer considered "in-range"
-            watcher.SignalStrengthFilter.OutOfRangeThresholdInDBm = -75;
+            watcher.SignalStrengthFilter.OutOfRangeThresholdInDBm = -80;
 
             // Set the out-of-range timeout to be 2 seconds. Used in conjunction with OutOfRangeThresholdInDBm
             // to determine when an advertisement is no longer considered "in-range"
@@ -49,6 +57,7 @@ namespace SharpBlunamiControl
             // Attach a handler to process watcher stopping due to various conditions,
             // such as the Bluetooth radio turning off or the Stop method was called
             watcher.Stopped += OnAdvertisementWatcherStopped;
+
         }
 
         private async void OnAdvertisementReceived(BluetoothLEAdvertisementWatcher watcher, BluetoothLEAdvertisementReceivedEventArgs eventArgs)
@@ -91,25 +100,87 @@ namespace SharpBlunamiControl
                     BitConverter.ToString(data));
             }
 
-            // Serialize UI update to the main UI thread
-            //await this.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
-            //{
-            // Display these information on the list
-            Console.WriteLine(string.Format("[{0}]: type={1}, rssi={2}, name={3}, manufacturerData=[{4}, address={5}]",
-                timestamp.ToString("hh\\:mm\\:ss\\.fff"),
-                advertisementType.ToString(),
-                rssi.ToString(),
-                localName,
-                manufacturerDataString, addressStr));
+            var servicesFound = eventArgs.Advertisement.ServiceUuids;
+            var dataSections = eventArgs.Advertisement.DataSections;
 
-            if(!BluetoothDeviceAddresses.Contains(address))
+            foreach (var service in servicesFound)
             {
-                BluetoothDeviceAddresses.Add(address);
+                //Console.WriteLine("Service: {0}", service.ToString());
+
+                if (service.ToString() == BlunamiCommandBase.blunamiServiceStr)
+                {
+                    Console.WriteLine("Found a Blunami service at {0}", addressStr);
+                    addressFromScanResponse = address;
+
+                }
             }
-            if (!FoundBluetoothDevicesNames.Contains(localName))
+
+            if(addressFromScanResponse == address) // check if the address is the same as the scan response, so we know it's the original device
             {
-                FoundBluetoothDevicesNames.Add(localName);
+                if(localName != "") // and the local name itself is not null, because Blunami scan response packets do not contain the name
+                {
+                    //Console.WriteLine(string.Format("[{0}]: type={1}, rssi={2}, name={3}, manufacturerData=[{4}, address={5}, services count:{6}]",
+                    //                    timestamp.ToString("hh\\:mm\\:ss\\.fff"),
+                    //                    advertisementType.ToString(),
+                    //                    rssi.ToString(),
+                    //                    localName,
+                    //                    manufacturerDataString, addressStr, servicesFound.Count));
+
+
+                    if (!BluetoothDeviceAddresses.Contains(address))
+                    {
+                        BluetoothDeviceAddresses.Add(address);
+                    }
+                    if (!FoundBluetoothDevicesNames.Contains(localName))
+                    {
+                        FoundBluetoothDevicesNames.Add(localName);
+                    }
+                }
             }
+
+
+            //if (!foundBlunamiAdvertisementService)
+            //{
+            //    foreach (var dataSection in dataSections)
+            //    {
+            //        var data = new byte[dataSection.Data.Length];
+            //        using (var reader = DataReader.FromBuffer(dataSection.Data))
+            //        {
+            //            reader.ReadBytes(data);
+            //        }
+            //        //Console.WriteLine("Data section: {0}, {1}", dataSection.DataType, System.Text.Encoding.Default.GetString(data));
+            //        //Console.WriteLine("Data section: {0}, {1}", dataSection.DataType, BitConverter.ToString(data));
+            //    }
+
+
+
+            //    // Serialize UI update to the main UI thread
+            //    //await this.Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+            //    //{
+            //    // Display these information on the list
+            //    Console.WriteLine(string.Format("[{0}]: type={1}, rssi={2}, name={3}, manufacturerData=[{4}, address={5}, services count:{6}]",
+            //        timestamp.ToString("hh\\:mm\\:ss\\.fff"),
+            //        advertisementType.ToString(),
+            //        rssi.ToString(),
+            //        localName,
+            //        manufacturerDataString, addressStr, servicesFound.Count));
+
+            //    //foreach (var serviceUuid in servicesFound)
+            //    //{
+            //    //    Console.WriteLine(serviceUuid.ToString());
+            //    //}
+
+            //    if (!BluetoothDeviceAddresses.Contains(address))
+            //    {
+            //        BluetoothDeviceAddresses.Add(address);
+            //    }
+            //    if (!FoundBluetoothDevicesNames.Contains(localName))
+            //    {
+            //        FoundBluetoothDevicesNames.Add(localName);
+            //    }
+            //}
+
+
 
             //})
         }

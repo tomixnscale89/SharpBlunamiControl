@@ -85,7 +85,16 @@ enum BlunamiEngineTypes
     BLUPNP8_DIESEL_ALCO = 106,
     BLUPNP8_DIESEL_BALDWIN = 107,
     BLUPNP8_DIESEL_EMD2 = 108,
-    BLUPNP8_ELECTRIC = 109,
+
+    //BLU-21PNEM8
+    BLU21PNEM8_STEAM = 109,
+    BLU21PNEM8_DISESL_EMD = 110,
+    BLU21PNEM8_DISESL_GE = 111,
+    BLU21PNEM8_DIESEL_ALCO = 112,
+    BLU21PNEM8_DIESEL_BALDWIN = 113,
+    BLU21PNEM8_DIESEL_EMD2 = 114,
+    BLU21PNEM8_ELECTRIC = 115,
+
 };
 
 namespace SharpBlunamiControl
@@ -408,6 +417,7 @@ namespace SharpBlunamiControl
         GattCharacteristic blunamiCharacteristic = null;
         int id = 3; // DCC defaults at 3
         int longID = 1234; // This is a quickID used for engines that make use of the long address. 
+        int TMCCIDVal = 3;
         int CV17Value = 0;
         int CV18Value = 0;
         int decoderType = 90; // set default to 2200 Steam2
@@ -495,12 +505,15 @@ namespace SharpBlunamiControl
                 this.usesLongAddress = true;
                 this.CV17Value = (this.id + 49152) >> 8;
                 this.CV18Value = (this.id + 49152) & 0xFF;
-                Console.WriteLine("CV17{0},CV18{1}", this.CV17Value, this.CV18Value);
+                //Console.WriteLine("CV17{0},CV18{1}", this.CV17Value, this.CV18Value);
             }
             else
             {
                 this.usesLongAddress = false;
             }
+
+            // This is only for communicating with Lionel devices. TMCC cannot handle 4 digit so we are just ignoring the last two values.
+            this.TMCCIDVal = this.Id / 100; // get rid of the last two digits by dividing by 100 and forgetting the decimal portions
 
         }
 
@@ -570,6 +583,18 @@ namespace SharpBlunamiControl
             get
             {
                 return id;
+            }
+            set
+            {
+                id = value;
+            }
+        }
+
+        public int TMCCID
+        {
+            get
+            {
+                return TMCCIDVal;
             }
             set
             {
