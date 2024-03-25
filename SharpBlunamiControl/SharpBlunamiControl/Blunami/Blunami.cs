@@ -58,6 +58,7 @@ public enum BlunamiEngineEffectCommandParams
 
 enum BlunamiEngineTypes
 {
+    BLUERAIL_TAMVALLEY = 0,
     // Potential values coming from CV256.
     // From: https://soundtraxx.com/content/Reference/Documentation/Reference-Documents/productID.pdf
 
@@ -126,7 +127,8 @@ namespace SharpBlunamiControl
                 case (int)BlunamiEngineTypes.BLUPNP8_DIESEL_EMD2: return "BLUPNP8 DISESL EMD-2";
                 case (int)BlunamiEngineTypes.BLUPNP8_DISESL_EMD: return "BLUPNP8 DIESEL EMD";
                 case (int)BlunamiEngineTypes.BLUPNP8_DISESL_GE: return "BLUPNP8 DIESEL GE";
-                default: return "Error Occured, likely data was interrupted by another fire_and_forget";
+                case (int)BlunamiEngineTypes.BLUERAIL_TAMVALLEY: return "BLUERAIL BY TAMVALLEY";
+                default: return "Unknown Board Type";
             }
         }
 
@@ -324,6 +326,8 @@ namespace SharpBlunamiControl
                         case (int)BlunamiEngineTypes.BLU2200_DISESL_EMD:
                         case (int)BlunamiEngineTypes.BLU2200_DISESL_GE:
                         case (int)BlunamiEngineTypes.BLU2200_ELECTRIC:
+                        case (int)BlunamiEngineTypes.BLUERAIL_TAMVALLEY:
+
                             {
                                 baseCommand[1] = 0x02;
                                 break;
@@ -380,7 +384,92 @@ namespace SharpBlunamiControl
                         GattWriteResult result = await loco.BlunamiCharactertisic.WriteValueWithResultAsync(writer.DetachBuffer());
                         if (result.Status == GattCommunicationStatus.Success)
                         {
-                            Console.WriteLine("Successfully wrote DynamoEffectPacket to train");
+                            //Console.WriteLine("Successfully wrote DynamoEffectPacket to train");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Could not find Blunami Characteristic returning invalid shortID");
+
+                    }
+
+                }
+                catch
+                {
+
+                }
+            }
+
+        }
+
+        async Task WriteBlunamiAGroupEffectCommand(BlunamiEngine loco)
+        {
+            if (loco.BluetoothLeDevice != null)
+            {
+                try
+                {
+                    byte[] baseCommand = new BlunamiCommandBase().baseCommand;
+
+                    switch (loco.DecoderType)
+                    {
+                        // for 2200 decoders, the byte 2 should be 0x02. 
+                        case (int)BlunamiEngineTypes.BLU2200_STEAM:
+                        case (int)BlunamiEngineTypes.BLU2200_DIESEL_ALCO:
+                        case (int)BlunamiEngineTypes.BLU2200_DIESEL_BALDWIN:
+                        case (int)BlunamiEngineTypes.BLU2200_DIESEL_EMD2:
+                        case (int)BlunamiEngineTypes.BLU2200_DISESL_EMD:
+                        case (int)BlunamiEngineTypes.BLU2200_DISESL_GE:
+                        case (int)BlunamiEngineTypes.BLU2200_ELECTRIC:
+                        case (int)BlunamiEngineTypes.BLUERAIL_TAMVALLEY:
+
+                            {
+                                baseCommand[1] = 0x02;
+                                break;
+                            }
+                        // for 4408 decoders, the byte 2 should be 0x03. 
+                        case (int)BlunamiEngineTypes.BLU4408_STEAM:
+                        case (int)BlunamiEngineTypes.BLU4408_DIESEL_ALCO:
+                        case (int)BlunamiEngineTypes.BLU4408_DIESEL_BALDWIN:
+                        case (int)BlunamiEngineTypes.BLU4408_DIESEL_EMD2:
+                        case (int)BlunamiEngineTypes.BLU4408_DISESL_EMD:
+                        case (int)BlunamiEngineTypes.BLU4408_DISESL_GE:
+                        case (int)BlunamiEngineTypes.BLU4408_ELECTRIC:
+                            {
+                                baseCommand[1] = 0x03;
+                                break;
+                            }
+
+                        default:
+                            Console.WriteLine("Failure to determine Decoder type: WriteBlunamiAGroupEffectCommand");
+                            return;
+
+                    }
+
+                    if (loco.UsesLongAddress)
+                    {
+                        baseCommand[2] = (byte)loco.CV17;
+                        baseCommand[3] = (byte)loco.CV18;
+                        baseCommand[4] = (byte)0xA0;
+                        baseCommand[4] += (byte)loco.AFlags;
+                    }
+                    else
+                    {
+                        baseCommand[2] = (byte)loco.Id;
+                        baseCommand[3] += (byte)0xA0;
+                        baseCommand[3] += (byte)loco.AFlags;
+
+                        //std.wcout << (int)dataToWrite[3] << std.endl;
+
+                    }
+
+                    var writer = new DataWriter();
+                    writer.WriteBytes(baseCommand);
+                    if (loco.BlunamiCharactertisic != null)
+                    {
+                        GattWriteResult result = await loco.BlunamiCharactertisic.WriteValueWithResultAsync(writer.DetachBuffer());
+                        if (result.Status == GattCommunicationStatus.Success)
+                        {
+                            //Console.WriteLine("Successfully wrote AEffectPacket to train");
                         }
                     }
                     else
@@ -416,6 +505,8 @@ namespace SharpBlunamiControl
                         case (int)BlunamiEngineTypes.BLU2200_DISESL_EMD:
                         case (int)BlunamiEngineTypes.BLU2200_DISESL_GE:
                         case (int)BlunamiEngineTypes.BLU2200_ELECTRIC:
+                        case (int)BlunamiEngineTypes.BLUERAIL_TAMVALLEY:
+
                             {
                                 baseCommand[1] = 0x03;
                                 break;
@@ -478,7 +569,106 @@ namespace SharpBlunamiControl
                         GattWriteResult result = await loco.BlunamiCharactertisic.WriteValueWithResultAsync(writer.DetachBuffer());
                         if (result.Status == GattCommunicationStatus.Success)
                         {
-                            Console.WriteLine("Successfully wrote SpeedPacket to train");
+                            //Console.WriteLine("Successfully wrote SpeedPacket to train");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Could not find Blunami Characteristic returning invalid shortID");
+
+                    }
+
+                }
+                catch
+                {
+
+                }
+            }
+
+        }
+
+        async Task WriteBlunamiDirectionCommand(BlunamiEngine loco)
+        {
+            if (loco.BluetoothLeDevice != null)
+            {
+                try
+                {
+                    byte[] baseCommand = new BlunamiCommandBase().baseSpeedCommand;
+
+                    switch (loco.DecoderType)
+                    {
+                        // for 2200 decoders, the byte 2 should be 0x02. 
+                        case (int)BlunamiEngineTypes.BLU2200_STEAM:
+                        case (int)BlunamiEngineTypes.BLU2200_DIESEL_ALCO:
+                        case (int)BlunamiEngineTypes.BLU2200_DIESEL_BALDWIN:
+                        case (int)BlunamiEngineTypes.BLU2200_DIESEL_EMD2:
+                        case (int)BlunamiEngineTypes.BLU2200_DISESL_EMD:
+                        case (int)BlunamiEngineTypes.BLU2200_DISESL_GE:
+                        case (int)BlunamiEngineTypes.BLU2200_ELECTRIC:
+                        case (int)BlunamiEngineTypes.BLUERAIL_TAMVALLEY:
+                            {
+                                baseCommand[1] = 0x03;
+                                break;
+                            }
+                        // for 4408 decoders, the byte 2 should be 0x03. 
+                        case (int)BlunamiEngineTypes.BLU4408_STEAM:
+                        case (int)BlunamiEngineTypes.BLU4408_DIESEL_ALCO:
+                        case (int)BlunamiEngineTypes.BLU4408_DIESEL_BALDWIN:
+                        case (int)BlunamiEngineTypes.BLU4408_DIESEL_EMD2:
+                        case (int)BlunamiEngineTypes.BLU4408_DISESL_EMD:
+                        case (int)BlunamiEngineTypes.BLU4408_DISESL_GE:
+                        case (int)BlunamiEngineTypes.BLU4408_ELECTRIC:
+                            {
+                                baseCommand[1] = 0x04;
+                                break;
+                            }
+
+                        default:
+                            Console.WriteLine("Failure to determine Decoder type: WriteBlunamiSpeedCommand");
+                            return;
+
+                    }
+
+                    if (loco.UsesLongAddress)
+                    {
+                        baseCommand[2] = (byte)loco.CV17;
+                        baseCommand[3] = (byte)loco.CV18;
+                        baseCommand[4] = 0x3F;
+
+                        if (loco.Direction)
+                        {
+                            baseCommand[5] = (byte)(0x81);
+                        }
+                        else
+                        {
+                            baseCommand[5] = (byte)(0x01);
+                        }
+
+                    }
+                    else
+                    {
+                        baseCommand[2] = (byte)loco.Id;
+                        baseCommand[3] = 0x3F;
+
+                        if (loco.Direction)
+                        {
+                            baseCommand[4] = (byte)(0x81);
+                        }
+                        else
+                        {
+                            baseCommand[4] = (byte)(0x01);
+                        }
+
+                    }
+
+                    var writer = new DataWriter();
+                    writer.WriteBytes(baseCommand);
+                    if (loco.BlunamiCharactertisic != null)
+                    {
+                        GattWriteResult result = await loco.BlunamiCharactertisic.WriteValueWithResultAsync(writer.DetachBuffer());
+                        if (result.Status == GattCommunicationStatus.Success)
+                        {
+                            //Console.WriteLine("Successfully wrote DirectionPacket to train");
                         }
                     }
                     else
@@ -527,12 +717,12 @@ namespace SharpBlunamiControl
         BlunamiEngineEffectCommandParams deFlags = (BlunamiEngineEffectCommandParams)0;
         BlunamiEngineEffectCommandParams dfFlags = (BlunamiEngineEffectCommandParams)0;
 
-        bool whistleOn = false;
         bool shortWhistleOn = false;
-        bool bellOn = false;
         bool headlightOn = false;
         bool direction = true; // true - forward, false - backward
                                //bool cylinderCocksOn = false;
+
+        bool brakeSelection = false; // false - Independent Brake, True - Train Brake
 
         //// A range
         //bool gradeCrossingWhistle = false;
@@ -580,6 +770,21 @@ namespace SharpBlunamiControl
         bool isShortWhistleOn()
         {
             return (dynamoFlags & BlunamiEngineEffectCommandParams.SHORT_WHISTLE) != (BlunamiEngineEffectCommandParams)0;
+        }
+
+        bool isGradeCrossingWhistleOn()
+        {
+            return (aFlags & BlunamiEngineEffectCommandParams.A_GRADE_CROSSING_WHISTLE) != (BlunamiEngineEffectCommandParams)0;
+        }
+
+        bool BrakeMode()
+        {
+            return (aFlags & BlunamiEngineEffectCommandParams.A_BRAKE_SELECT) != (BlunamiEngineEffectCommandParams)0;
+        }
+
+        bool isBrakeOn()
+        {
+            return (aFlags & BlunamiEngineEffectCommandParams.A_BRAKE_ENABLED) != (BlunamiEngineEffectCommandParams)0;
         }
 
         public BlunamiEngine(BluetoothLEDevice bluetoothLEDevice, int address, int decoderType, int speed)
@@ -767,11 +972,29 @@ namespace SharpBlunamiControl
         {
             get
             {
-                return whistleOn;
+                return isWhistleOn();
             }
             set
             {
-                whistleOn = value;
+                if(value)
+                    DynamoFlags |= BlunamiEngineEffectCommandParams.LONG_WHISTLE;
+                else
+                    DynamoFlags ^= BlunamiEngineEffectCommandParams.LONG_WHISTLE;
+            }
+        }
+
+        public bool Bell
+        {
+            get
+            {
+                return isBellOn();
+            }
+            set
+            {
+                if (value)
+                    DynamoFlags |= BlunamiEngineEffectCommandParams.BELL;
+                else
+                    DynamoFlags ^= BlunamiEngineEffectCommandParams.BELL;
             }
         }
 
@@ -779,11 +1002,30 @@ namespace SharpBlunamiControl
         {
             get
             {
-                return shortWhistleOn;
+                return isShortWhistleOn();
             }
             set
             {
-                shortWhistleOn = value;
+                if (value)
+                    DynamoFlags |= BlunamiEngineEffectCommandParams.SHORT_WHISTLE;
+                else
+                    DynamoFlags ^= BlunamiEngineEffectCommandParams.SHORT_WHISTLE;
+            }
+
+        }
+
+        public bool GradeCrossingWhistle
+        {
+            get
+            {
+                return isGradeCrossingWhistleOn();
+            }
+            set
+            {
+                if (value)
+                    AFlags |= BlunamiEngineEffectCommandParams.A_GRADE_CROSSING_WHISTLE;
+                else
+                    AFlags ^= BlunamiEngineEffectCommandParams.A_GRADE_CROSSING_WHISTLE;
             }
 
         }
@@ -812,6 +1054,36 @@ namespace SharpBlunamiControl
             }
         }
 
+        public bool Brake
+        {
+            get
+            {
+                return isBrakeOn();
+            }
+            set
+            {
+                if (value)
+                    AFlags |= BlunamiEngineEffectCommandParams.A_BRAKE_ENABLED;
+                else
+                    AFlags ^= BlunamiEngineEffectCommandParams.A_BRAKE_ENABLED;
+            }
+        }
+
+        public bool BrakeSelection
+        {
+            get
+            {
+                return BrakeMode();
+            }
+            set
+            {
+                if (value)
+                    AFlags |= BlunamiEngineEffectCommandParams.A_BRAKE_SELECT;
+                else
+                    AFlags ^= BlunamiEngineEffectCommandParams.A_BRAKE_SELECT;
+            }
+        }
+
         public bool UsesLongAddress
         {
             get
@@ -833,6 +1105,18 @@ namespace SharpBlunamiControl
             set
             {
                 dynamoFlags = (BlunamiEngineEffectCommandParams)value;
+            }
+        }
+
+        public BlunamiEngineEffectCommandParams AFlags
+        {
+            get
+            {
+                return aFlags;
+            }
+            set
+            {
+                aFlags = (BlunamiEngineEffectCommandParams)value;
             }
         }
 

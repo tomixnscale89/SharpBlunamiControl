@@ -109,7 +109,7 @@ namespace SharpBlunamiControl
 
                 if (service.ToString() == BlunamiCommandBase.blunamiServiceStr)
                 {
-                    Console.WriteLine("Found a Blunami service at {0}", addressStr);
+                    Console.WriteLine("Found a Blunami Device with address: {0}", addressStr);
                     addressFromScanResponse = address;
 
                 }

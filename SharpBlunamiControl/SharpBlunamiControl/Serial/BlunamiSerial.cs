@@ -87,6 +87,8 @@ namespace SharpBlunamiControl
         bool brakeButtonPressed = false;
         bool directionButtonPressed = false;
 
+        bool num0Pressed, num1Pressed, num2Pressed, num3Pressed, num4Pressed, num5Pressed, num6Pressed, num7Pressed, num8Pressed, num9Pressed = false;
+
         //
         int lastFoundTMCCID;
         BlunamiEngine lastUsedEngine;
@@ -95,8 +97,6 @@ namespace SharpBlunamiControl
         float lastPressTime;
         float buttonHoldInterval = 115;
         bool debugString = true;
-
-        Tuple<int, int, int> previousTMCCPacket;
 
         bool SelectSerialPort()
         {
@@ -173,8 +173,8 @@ namespace SharpBlunamiControl
                     buf[i] = (byte)serialPort.ReadByte();
                 }
 
-                if (debugString)
-                    Console.WriteLine("Hex: " + BitConverter.ToString(buf));
+                //if (debugString)
+                //    Console.WriteLine("Hex: " + BitConverter.ToString(buf));
                 if (buf.Length == 3)
                 {
                     /*
@@ -217,50 +217,7 @@ namespace SharpBlunamiControl
                                         }
                                     case (int)TMCCCommandType.CT_RELATIVE_SPEED:
                                         {
-                                            Console.WriteLine("Speed packet");
-                                            switch (TMCCPacket.Item2)
-                                            {
-                                                case 0xA:
-                                                    blunami.Speed += 5;
-                                                    break;
-                                                case 0x9:
-                                                    blunami.Speed += 4;
-                                                    break;
-                                                case 0x8:
-                                                    blunami.Speed += 3;
-                                                    break;
-                                                case 0x7:
-                                                    blunami.Speed += 2;
-                                                    break;
-                                                case 0x6:
-                                                    blunami.Speed += 1;
-                                                    break;
-                                                case 0x5:
-                                                    blunami.Speed += 0;
-                                                    break;
-                                                case 0x4:
-                                                    blunami.Speed += -1;
-                                                    break;
-                                                case 0x3:
-                                                    blunami.Speed += -2;
-                                                    break;
-                                                case 0x2:
-                                                    blunami.Speed += -3;
-                                                    break;
-                                                case 0x1:
-                                                    blunami.Speed += -4;
-                                                    break;
-                                                case 0x0:
-                                                    blunami.Speed += -5;
-                                                    break;
-                                            }
-
-                                            if (blunami.Speed > 126)
-                                                blunami.Speed = 126;
-                                            if (blunami.Speed < 0)
-                                                blunami.Speed = 0;
-
-                                            WriteBlunamiSpeedCommand(blunami);
+                                            SetTMCCSpeedState(TMCCPacket.Item2, blunami);
 
                                             break;
                                         }
@@ -279,7 +236,7 @@ namespace SharpBlunamiControl
      
             catch (TimeoutException)
             {
-                Console.WriteLine("Button's not pressed");
+                Console.WriteLine("Serial COM Timeout");
             }
             
         }
@@ -309,6 +266,57 @@ namespace SharpBlunamiControl
             }
         }
 
+        void SetTMCCSpeedState(int dataid, BlunamiEngine loco)
+        {
+            
+            switch (dataid)
+            {
+                case 0xA:
+                    loco.Speed += 5;
+                    break;
+                case 0x9:
+                    loco.Speed += 4;
+                    break;
+                case 0x8:
+                    loco.Speed += 3;
+                    break;
+                case 0x7:
+                    loco.Speed += 2;
+                    break;
+                case 0x6:
+                    loco.Speed += 1;
+                    break;
+                case 0x5:
+                    loco.Speed += 0;
+                    break;
+                case 0x4:
+                    loco.Speed += -1;
+                    break;
+                case 0x3:
+                    loco.Speed += -2;
+                    break;
+                case 0x2:
+                    loco.Speed += -3;
+                    break;
+                case 0x1:
+                    loco.Speed += -4;
+                    break;
+                case 0x0:
+                    loco.Speed += -5;
+                    break;
+            }
+
+            if (loco.Speed > 126)
+                loco.Speed = 126;
+            if (loco.Speed < 0)
+                loco.Speed = 0;
+
+            WriteBlunamiSpeedCommand(loco);
+
+            if (debugString)
+                Console.WriteLine("{0}: Speed: {1}", loco.BluetoothLeDevice.Name, loco.Speed);
+        }
+
         void SetTMCCButtonSates(int dataid, BlunamiEngine loco)
         {
             switch (dataid)
@@ -318,7 +326,6 @@ namespace SharpBlunamiControl
                 case (int)EngineCommandParams.EC_BLOW_HORN_2:
                     {
 
-                        loco.DynamoFlags |= BlunamiEngineEffectCommandParams.LONG_WHISTLE;
                         loco.Whistle = true;
                         whistleButtonPressed = true;
                         Task.Run(async () =>
@@ -326,24 +333,24 @@ namespace SharpBlunamiControl
                             await WriteBlunamiDynamoGroupEffectCommand(loco);
 
                         }).GetAwaiter().GetResult();
-                        if (debugString)
-                            Console.WriteLine("Horn pressed");
+                        //if (debugString)
+                        //    Console.WriteLine("Horn pressed");
                         break;
                     }
 
                 case (int)EngineCommandParams.EC_RING_BELL:
                     {
                         bellButtonPressed = true;
-                        if (debugString)
-                            Console.WriteLine("Bell pressed\n");
+                        //if (debugString)
+                        //    Console.WriteLine("Bell pressed\n");
                         break;
                     }
 
                 case (int)EngineCommandParams.EC_TOGGLE_DIRECTION:
                     {
                         directionButtonPressed = true;
-                        if (debugString)
-                            Console.WriteLine("Toggle direction pressed\n");
+                        //if (debugString)
+                        //    Console.WriteLine("Toggle direction pressed\n");
                         break;
                     }
 
@@ -358,8 +365,8 @@ namespace SharpBlunamiControl
                 case (int)EngineCommandParams.EC_AUX_2_OPTION_1:
                     {
                         headlightButtonPressed = true;
-                        if (debugString)
-                            Console.WriteLine("Aux2 pressed\n");
+                        //if (debugString)
+                        //    Console.WriteLine("Aux2 pressed\n");
                         break;
                     }
 
@@ -382,26 +389,24 @@ namespace SharpBlunamiControl
                 case (int)EngineCommandParams.EC_BOOST_SPEED:
                     {
                         boostButtonPressed = true;
-                        if (debugString)
-                            Console.WriteLine("Boost pressed\n");
+                        //if (debugString)
+                        //    Console.WriteLine("Boost pressed\n");
                         break;
                     }
 
                 case (int)EngineCommandParams.EC_BRAKE_SPEED:
                     {
                         brakeButtonPressed = true;
-                        if (debugString)
-                            Console.WriteLine("Brake pressed\n");
+                        //if (debugString)
+                        //    Console.WriteLine("Brake pressed\n");
                         break;
                     }
 
                 default:
                     {
                         dataid &= (int)EngineCommandParams.EC_NUMERIC_MASK;
-                        if (debugString)
-                            Console.WriteLine("Numerical pressed: %d\n", dataid);
-                        break;
-
+                        //if (debugString)
+                        //    Console.WriteLine("Numerical pressed: {0}", dataid);
                         switch (dataid)
                         {
                             case 0:
@@ -409,8 +414,10 @@ namespace SharpBlunamiControl
                             case 1:
                                 break;
                             case 2:
+                                num2Pressed = true;
                                 break;
                             case 3:
+                                num3Pressed = true;
                                 break;
                             case 4:
                                 break;
@@ -425,6 +432,7 @@ namespace SharpBlunamiControl
                             case 9:
                                 break;
                         }
+                        break;
                     }
 
             }
