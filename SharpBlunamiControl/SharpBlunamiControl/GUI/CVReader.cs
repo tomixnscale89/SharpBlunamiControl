@@ -10,16 +10,11 @@ using System.Windows.Forms;
 
 namespace SharpBlunamiControl.GUI
 {
-    public partial class SharpBlunamiControl : Form
+    public partial class CVReader : Form
     {
-        public SharpBlunamiControl()
+        public CVReader()
         {
             InitializeComponent();
-        }
-
-        private void Form1_Load(object sender, EventArgs e)
-        {
-
         }
     }
 }
