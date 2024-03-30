@@ -316,43 +316,45 @@ namespace SharpBlunamiControl
                 {
                     byte[] baseCommand = new BlunamiCommandBase().baseCommand;
 
-                    switch (loco.DecoderType)
-                    {
-                        // for 2200 decoders, the byte 2 should be 0x02. 
-                        case (int)BlunamiEngineTypes.BLU2200_STEAM:
-                        case (int)BlunamiEngineTypes.BLU2200_DIESEL_ALCO:
-                        case (int)BlunamiEngineTypes.BLU2200_DIESEL_BALDWIN:
-                        case (int)BlunamiEngineTypes.BLU2200_DIESEL_EMD2:
-                        case (int)BlunamiEngineTypes.BLU2200_DISESL_EMD:
-                        case (int)BlunamiEngineTypes.BLU2200_DISESL_GE:
-                        case (int)BlunamiEngineTypes.BLU2200_ELECTRIC:
-                        case (int)BlunamiEngineTypes.BLUERAIL_TAMVALLEY:
+                    //switch (loco.DecoderType)
+                    //{
+                    //    // for 2200 decoders, the byte 2 should be 0x02. 
+                    //    case (int)BlunamiEngineTypes.BLU2200_STEAM:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DIESEL_ALCO:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DIESEL_BALDWIN:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DIESEL_EMD2:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DISESL_EMD:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DISESL_GE:
+                    //    case (int)BlunamiEngineTypes.BLU2200_ELECTRIC:
+                    //    case (int)BlunamiEngineTypes.BLUERAIL_TAMVALLEY:
 
-                            {
-                                baseCommand[1] = 0x02;
-                                break;
-                            }
-                        // for 4408 decoders, the byte 2 should be 0x03. 
-                        case (int)BlunamiEngineTypes.BLU4408_STEAM:
-                        case (int)BlunamiEngineTypes.BLU4408_DIESEL_ALCO:
-                        case (int)BlunamiEngineTypes.BLU4408_DIESEL_BALDWIN:
-                        case (int)BlunamiEngineTypes.BLU4408_DIESEL_EMD2:
-                        case (int)BlunamiEngineTypes.BLU4408_DISESL_EMD:
-                        case (int)BlunamiEngineTypes.BLU4408_DISESL_GE:
-                        case (int)BlunamiEngineTypes.BLU4408_ELECTRIC:
-                            {
-                                baseCommand[1] = 0x03;
-                                break;
-                            }
+                    //        {
+                    //            baseCommand[1] = 0x02;
+                    //            break;
+                    //        }
+                    //    // for 4408 decoders, the byte 2 should be 0x03. 
+                    //    case (int)BlunamiEngineTypes.BLU4408_STEAM:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DIESEL_ALCO:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DIESEL_BALDWIN:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DIESEL_EMD2:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DISESL_EMD:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DISESL_GE:
+                    //    case (int)BlunamiEngineTypes.BLU4408_ELECTRIC:
+                    //        {
+                    //            baseCommand[1] = 0x03;
+                    //            break;
+                    //        }
 
-                        default:
-                            Console.WriteLine("Failure to determine Decoder type: WriteBlunamiDynamoGroupEffectCommand");
-                            return;
+                    //    default:
+                    //        Console.WriteLine("Failure to determine Decoder type: WriteBlunamiDynamoGroupEffectCommand");
+                    //        return;
 
-                    }
+                    //}
 
                     if (loco.UsesLongAddress)
                     {
+                        baseCommand[1] = 0x03;
+
                         baseCommand[2] = (byte)loco.CV17;
                         baseCommand[3] = (byte)loco.CV18;
 
@@ -365,6 +367,7 @@ namespace SharpBlunamiControl
                     }
                     else
                     {
+                        baseCommand[1] = 0x02;
                         baseCommand[2] = (byte)loco.Id;
                         if (loco.Headlight)
                             baseCommand[3] = (byte)BlunamiEngineEffectCommandTypes.DYNAMO_ON;
@@ -410,43 +413,44 @@ namespace SharpBlunamiControl
                 {
                     byte[] baseCommand = new BlunamiCommandBase().baseCommand;
 
-                    switch (loco.DecoderType)
-                    {
-                        // for 2200 decoders, the byte 2 should be 0x02. 
-                        case (int)BlunamiEngineTypes.BLU2200_STEAM:
-                        case (int)BlunamiEngineTypes.BLU2200_DIESEL_ALCO:
-                        case (int)BlunamiEngineTypes.BLU2200_DIESEL_BALDWIN:
-                        case (int)BlunamiEngineTypes.BLU2200_DIESEL_EMD2:
-                        case (int)BlunamiEngineTypes.BLU2200_DISESL_EMD:
-                        case (int)BlunamiEngineTypes.BLU2200_DISESL_GE:
-                        case (int)BlunamiEngineTypes.BLU2200_ELECTRIC:
-                        case (int)BlunamiEngineTypes.BLUERAIL_TAMVALLEY:
+                    //switch (loco.DecoderType)
+                    //{
+                    //    // for 2200 decoders, the byte 2 should be 0x02. 
+                    //    case (int)BlunamiEngineTypes.BLU2200_STEAM:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DIESEL_ALCO:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DIESEL_BALDWIN:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DIESEL_EMD2:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DISESL_EMD:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DISESL_GE:
+                    //    case (int)BlunamiEngineTypes.BLU2200_ELECTRIC:
+                    //    case (int)BlunamiEngineTypes.BLUERAIL_TAMVALLEY:
 
-                            {
-                                baseCommand[1] = 0x02;
-                                break;
-                            }
-                        // for 4408 decoders, the byte 2 should be 0x03. 
-                        case (int)BlunamiEngineTypes.BLU4408_STEAM:
-                        case (int)BlunamiEngineTypes.BLU4408_DIESEL_ALCO:
-                        case (int)BlunamiEngineTypes.BLU4408_DIESEL_BALDWIN:
-                        case (int)BlunamiEngineTypes.BLU4408_DIESEL_EMD2:
-                        case (int)BlunamiEngineTypes.BLU4408_DISESL_EMD:
-                        case (int)BlunamiEngineTypes.BLU4408_DISESL_GE:
-                        case (int)BlunamiEngineTypes.BLU4408_ELECTRIC:
-                            {
-                                baseCommand[1] = 0x03;
-                                break;
-                            }
+                    //        {
+                    //            baseCommand[1] = 0x02;
+                    //            break;
+                    //        }
+                    //    // for 4408 decoders, the byte 2 should be 0x03. 
+                    //    case (int)BlunamiEngineTypes.BLU4408_STEAM:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DIESEL_ALCO:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DIESEL_BALDWIN:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DIESEL_EMD2:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DISESL_EMD:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DISESL_GE:
+                    //    case (int)BlunamiEngineTypes.BLU4408_ELECTRIC:
+                    //        {
+                    //            baseCommand[1] = 0x03;
+                    //            break;
+                    //        }
 
-                        default:
-                            Console.WriteLine("Failure to determine Decoder type: WriteBlunamiAGroupEffectCommand");
-                            return;
+                    //    default:
+                    //        Console.WriteLine("Failure to determine Decoder type: WriteBlunamiAGroupEffectCommand");
+                    //        return;
 
-                    }
+                    //}
 
                     if (loco.UsesLongAddress)
                     {
+                        baseCommand[1] = 0x03;
                         baseCommand[2] = (byte)loco.CV17;
                         baseCommand[3] = (byte)loco.CV18;
                         baseCommand[4] = (byte)0xA0;
@@ -454,9 +458,273 @@ namespace SharpBlunamiControl
                     }
                     else
                     {
+                        baseCommand[1] = 0x02;
                         baseCommand[2] = (byte)loco.Id;
                         baseCommand[3] += (byte)0xA0;
                         baseCommand[3] += (byte)loco.AFlags;
+
+                        //std.wcout << (int)dataToWrite[3] << std.endl;
+
+                    }
+
+                    var writer = new DataWriter();
+                    writer.WriteBytes(baseCommand);
+                    if (loco.BlunamiCharactertisic != null)
+                    {
+                        GattWriteResult result = await loco.BlunamiCharactertisic.WriteValueWithResultAsync(writer.DetachBuffer());
+                        if (result.Status == GattCommunicationStatus.Success)
+                        {
+                            //Console.WriteLine("Successfully wrote AEffectPacket to train");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Could not find Blunami Characteristic returning invalid shortID");
+
+                    }
+
+                }
+                catch
+                {
+
+                }
+            }
+
+        }
+
+        async Task WriteBlunamiBGroupEffectCommand(BlunamiEngine loco)
+        {
+            if (loco.BluetoothLeDevice != null)
+            {
+                try
+                {
+                    byte[] baseCommand = new BlunamiCommandBase().baseCommand;
+
+                    //switch (loco.DecoderType)
+                    //{
+                    //    // for 2200 decoders, the byte 2 should be 0x02. 
+                    //    case (int)BlunamiEngineTypes.BLU2200_STEAM:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DIESEL_ALCO:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DIESEL_BALDWIN:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DIESEL_EMD2:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DISESL_EMD:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DISESL_GE:
+                    //    case (int)BlunamiEngineTypes.BLU2200_ELECTRIC:
+                    //    case (int)BlunamiEngineTypes.BLUERAIL_TAMVALLEY:
+
+                    //        {
+                    //            baseCommand[1] = 0x02;
+                    //            break;
+                    //        }
+                    //    // for 4408 decoders, the byte 2 should be 0x03. 
+                    //    case (int)BlunamiEngineTypes.BLU4408_STEAM:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DIESEL_ALCO:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DIESEL_BALDWIN:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DIESEL_EMD2:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DISESL_EMD:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DISESL_GE:
+                    //    case (int)BlunamiEngineTypes.BLU4408_ELECTRIC:
+                    //        {
+                    //            baseCommand[1] = 0x03;
+                    //            break;
+                    //        }
+
+                    //    default:
+                    //        Console.WriteLine("Failure to determine Decoder type: WriteBlunamiBGroupEffectCommand");
+                    //        return;
+
+                    //}
+
+                    if (loco.UsesLongAddress)
+                    {
+                        baseCommand[1] = 0x03;
+                        baseCommand[2] = (byte)loco.CV17;
+                        baseCommand[3] = (byte)loco.CV18;
+                        baseCommand[4] = (byte)0xB0;
+                        baseCommand[4] += (byte)loco.BFlags;
+                    }
+                    else
+                    {
+                        baseCommand[1] = 0x02;
+                        baseCommand[2] = (byte)loco.Id;
+                        baseCommand[3] += (byte)0xB0;
+                        baseCommand[3] += (byte)loco.BFlags;
+
+                        //std.wcout << (int)dataToWrite[3] << std.endl;
+
+                    }
+
+                    var writer = new DataWriter();
+                    writer.WriteBytes(baseCommand);
+                    if (loco.BlunamiCharactertisic != null)
+                    {
+                        GattWriteResult result = await loco.BlunamiCharactertisic.WriteValueWithResultAsync(writer.DetachBuffer());
+                        if (result.Status == GattCommunicationStatus.Success)
+                        {
+                            //Console.WriteLine("Successfully wrote AEffectPacket to train");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Could not find Blunami Characteristic returning invalid shortID");
+
+                    }
+
+                }
+                catch
+                {
+
+                }
+            }
+
+        }
+
+        async Task WriteBlunamiDEGroupEffectCommand(BlunamiEngine loco)
+        {
+            if (loco.BluetoothLeDevice != null)
+            {
+                try
+                {
+                    byte[] baseCommand = new BlunamiCommandBase().baseCommand;
+
+                    //switch (loco.DecoderType)
+                    //{
+                    //    // for 2200 decoders, the byte 2 should be 0x02. 
+                    //    case (int)BlunamiEngineTypes.BLU2200_STEAM:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DIESEL_ALCO:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DIESEL_BALDWIN:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DIESEL_EMD2:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DISESL_EMD:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DISESL_GE:
+                    //    case (int)BlunamiEngineTypes.BLU2200_ELECTRIC:
+                    //    case (int)BlunamiEngineTypes.BLUERAIL_TAMVALLEY:
+
+                    //        {
+                    //            baseCommand[1] = 0x03;
+                    //            break;
+                    //        }
+                    //    // for 4408 decoders, the byte 2 should be 0x03. 
+                    //    case (int)BlunamiEngineTypes.BLU4408_STEAM:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DIESEL_ALCO:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DIESEL_BALDWIN:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DIESEL_EMD2:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DISESL_EMD:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DISESL_GE:
+                    //    case (int)BlunamiEngineTypes.BLU4408_ELECTRIC:
+                    //        {
+                    //            baseCommand[1] = 0x04;
+                    //            break;
+                    //        }
+
+                    //    default:
+                    //        Console.WriteLine("Failure to determine Decoder type: WriteBlunamiDEGroupEffectCommand");
+                    //        return;
+
+                    //}
+
+                    if (loco.UsesLongAddress)
+                    {
+                        baseCommand[1] = 0x04;
+
+                        baseCommand[2] = (byte)loco.CV17;
+                        baseCommand[3] = (byte)loco.CV18;
+                        baseCommand[4] = (byte)0xDE;
+                        baseCommand[5] += (byte)loco.DEFlags;
+                    }
+                    else
+                    {
+                        baseCommand[1] = 0x03;
+
+                        baseCommand[2] = (byte)loco.Id;
+                        baseCommand[3] = (byte)0xDE;
+                        baseCommand[4] += (byte)loco.DEFlags;
+
+                        //std.wcout << (int)dataToWrite[3] << std.endl;
+
+                    }
+
+                    var writer = new DataWriter();
+                    writer.WriteBytes(baseCommand);
+                    if (loco.BlunamiCharactertisic != null)
+                    {
+                        GattWriteResult result = await loco.BlunamiCharactertisic.WriteValueWithResultAsync(writer.DetachBuffer());
+                        if (result.Status == GattCommunicationStatus.Success)
+                        {
+                            //Console.WriteLine("Successfully wrote AEffectPacket to train");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Could not find Blunami Characteristic returning invalid shortID");
+
+                    }
+
+                }
+                catch
+                {
+
+                }
+            }
+
+        }
+
+        async Task WriteBlunamiDFGroupEffectCommand(BlunamiEngine loco)
+        {
+            if (loco.BluetoothLeDevice != null)
+            {
+                try
+                {
+                    byte[] baseCommand = new BlunamiCommandBase().baseCommand;
+
+                    //switch (loco.DecoderType)
+                    //{
+                    //    // for 2200 decoders, the byte 2 should be 0x02. 
+                    //    case (int)BlunamiEngineTypes.BLU2200_STEAM:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DIESEL_ALCO:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DIESEL_BALDWIN:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DIESEL_EMD2:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DISESL_EMD:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DISESL_GE:
+                    //    case (int)BlunamiEngineTypes.BLU2200_ELECTRIC:
+                    //    case (int)BlunamiEngineTypes.BLUERAIL_TAMVALLEY:
+
+                    //        {
+                    //            baseCommand[1] = 0x03;
+                    //            break;
+                    //        }
+                    //    // for 4408 decoders, the byte 2 should be 0x03. 
+                    //    case (int)BlunamiEngineTypes.BLU4408_STEAM:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DIESEL_ALCO:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DIESEL_BALDWIN:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DIESEL_EMD2:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DISESL_EMD:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DISESL_GE:
+                    //    case (int)BlunamiEngineTypes.BLU4408_ELECTRIC:
+                    //        {
+                    //            baseCommand[1] = 0x04;
+                    //            break;
+                    //        }
+
+                    //    default:
+                    //        Console.WriteLine("Failure to determine Decoder type: WriteBlunamiDFGroupEffectCommand");
+                    //        return;
+
+                    //}
+
+                    if (loco.UsesLongAddress)
+                    {
+                        baseCommand[1] = 0x04;
+                        baseCommand[2] = (byte)loco.CV17;
+                        baseCommand[3] = (byte)loco.CV18;
+                        baseCommand[4] = (byte)0xDF;
+                        baseCommand[5] += (byte)loco.DFFlags;
+                    }
+                    else
+                    {
+                        baseCommand[1] = 0x03;
+                        baseCommand[2] = (byte)loco.Id;
+                        baseCommand[3] = (byte)0xDF;
+                        baseCommand[4] += (byte)loco.DFFlags;
 
                         //std.wcout << (int)dataToWrite[3] << std.endl;
 
@@ -495,43 +763,44 @@ namespace SharpBlunamiControl
                 {
                     byte[] baseCommand = new BlunamiCommandBase().baseSpeedCommand;
 
-                    switch (loco.DecoderType)
-                    {
-                        // for 2200 decoders, the byte 2 should be 0x02. 
-                        case (int)BlunamiEngineTypes.BLU2200_STEAM:
-                        case (int)BlunamiEngineTypes.BLU2200_DIESEL_ALCO:
-                        case (int)BlunamiEngineTypes.BLU2200_DIESEL_BALDWIN:
-                        case (int)BlunamiEngineTypes.BLU2200_DIESEL_EMD2:
-                        case (int)BlunamiEngineTypes.BLU2200_DISESL_EMD:
-                        case (int)BlunamiEngineTypes.BLU2200_DISESL_GE:
-                        case (int)BlunamiEngineTypes.BLU2200_ELECTRIC:
-                        case (int)BlunamiEngineTypes.BLUERAIL_TAMVALLEY:
+                    //switch (loco.DecoderType)
+                    //{
+                    //    // for 2200 decoders, the byte 2 should be 0x02. 
+                    //    case (int)BlunamiEngineTypes.BLU2200_STEAM:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DIESEL_ALCO:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DIESEL_BALDWIN:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DIESEL_EMD2:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DISESL_EMD:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DISESL_GE:
+                    //    case (int)BlunamiEngineTypes.BLU2200_ELECTRIC:
+                    //    case (int)BlunamiEngineTypes.BLUERAIL_TAMVALLEY:
 
-                            {
-                                baseCommand[1] = 0x03;
-                                break;
-                            }
-                        // for 4408 decoders, the byte 2 should be 0x03. 
-                        case (int)BlunamiEngineTypes.BLU4408_STEAM:
-                        case (int)BlunamiEngineTypes.BLU4408_DIESEL_ALCO:
-                        case (int)BlunamiEngineTypes.BLU4408_DIESEL_BALDWIN:
-                        case (int)BlunamiEngineTypes.BLU4408_DIESEL_EMD2:
-                        case (int)BlunamiEngineTypes.BLU4408_DISESL_EMD:
-                        case (int)BlunamiEngineTypes.BLU4408_DISESL_GE:
-                        case (int)BlunamiEngineTypes.BLU4408_ELECTRIC:
-                            {
-                                baseCommand[1] = 0x04;
-                                break;
-                            }
+                    //        {
+                    //            baseCommand[1] = 0x03;
+                    //            break;
+                    //        }
+                    //    // for 4408 decoders, the byte 2 should be 0x03. 
+                    //    case (int)BlunamiEngineTypes.BLU4408_STEAM:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DIESEL_ALCO:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DIESEL_BALDWIN:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DIESEL_EMD2:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DISESL_EMD:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DISESL_GE:
+                    //    case (int)BlunamiEngineTypes.BLU4408_ELECTRIC:
+                    //        {
+                    //            baseCommand[1] = 0x04;
+                    //            break;
+                    //        }
 
-                        default:
-                            Console.WriteLine("Failure to determine Decoder type: WriteBlunamiSpeedCommand");
-                            return;
+                    //    default:
+                    //        Console.WriteLine("Failure to determine Decoder type: WriteBlunamiSpeedCommand");
+                    //        return;
 
-                    }
+                    //}
 
                     if (loco.UsesLongAddress)
                     {
+                        baseCommand[1] = 0x04;
                         baseCommand[2] = (byte)loco.CV17;
                         baseCommand[3] = (byte)loco.CV18;
                         baseCommand[4] = 0x3F;
@@ -548,6 +817,7 @@ namespace SharpBlunamiControl
                     }
                     else
                     {
+                        baseCommand[1] = 0x03;
                         baseCommand[2] = (byte)loco.Id;
                         baseCommand[3] = 0x3F;
 
@@ -595,42 +865,43 @@ namespace SharpBlunamiControl
                 {
                     byte[] baseCommand = new BlunamiCommandBase().baseSpeedCommand;
 
-                    switch (loco.DecoderType)
-                    {
-                        // for 2200 decoders, the byte 2 should be 0x02. 
-                        case (int)BlunamiEngineTypes.BLU2200_STEAM:
-                        case (int)BlunamiEngineTypes.BLU2200_DIESEL_ALCO:
-                        case (int)BlunamiEngineTypes.BLU2200_DIESEL_BALDWIN:
-                        case (int)BlunamiEngineTypes.BLU2200_DIESEL_EMD2:
-                        case (int)BlunamiEngineTypes.BLU2200_DISESL_EMD:
-                        case (int)BlunamiEngineTypes.BLU2200_DISESL_GE:
-                        case (int)BlunamiEngineTypes.BLU2200_ELECTRIC:
-                        case (int)BlunamiEngineTypes.BLUERAIL_TAMVALLEY:
-                            {
-                                baseCommand[1] = 0x03;
-                                break;
-                            }
-                        // for 4408 decoders, the byte 2 should be 0x03. 
-                        case (int)BlunamiEngineTypes.BLU4408_STEAM:
-                        case (int)BlunamiEngineTypes.BLU4408_DIESEL_ALCO:
-                        case (int)BlunamiEngineTypes.BLU4408_DIESEL_BALDWIN:
-                        case (int)BlunamiEngineTypes.BLU4408_DIESEL_EMD2:
-                        case (int)BlunamiEngineTypes.BLU4408_DISESL_EMD:
-                        case (int)BlunamiEngineTypes.BLU4408_DISESL_GE:
-                        case (int)BlunamiEngineTypes.BLU4408_ELECTRIC:
-                            {
-                                baseCommand[1] = 0x04;
-                                break;
-                            }
+                    //switch (loco.DecoderType)
+                    //{
+                    //    // for 2200 decoders, the byte 2 should be 0x02. 
+                    //    case (int)BlunamiEngineTypes.BLU2200_STEAM:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DIESEL_ALCO:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DIESEL_BALDWIN:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DIESEL_EMD2:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DISESL_EMD:
+                    //    case (int)BlunamiEngineTypes.BLU2200_DISESL_GE:
+                    //    case (int)BlunamiEngineTypes.BLU2200_ELECTRIC:
+                    //    case (int)BlunamiEngineTypes.BLUERAIL_TAMVALLEY:
+                    //        {
+                    //            baseCommand[1] = 0x03;
+                    //            break;
+                    //        }
+                    //    // for 4408 decoders, the byte 2 should be 0x03. 
+                    //    case (int)BlunamiEngineTypes.BLU4408_STEAM:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DIESEL_ALCO:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DIESEL_BALDWIN:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DIESEL_EMD2:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DISESL_EMD:
+                    //    case (int)BlunamiEngineTypes.BLU4408_DISESL_GE:
+                    //    case (int)BlunamiEngineTypes.BLU4408_ELECTRIC:
+                    //        {
+                    //            baseCommand[1] = 0x04;
+                    //            break;
+                    //        }
 
-                        default:
-                            Console.WriteLine("Failure to determine Decoder type: WriteBlunamiSpeedCommand");
-                            return;
+                    //    default:
+                    //        Console.WriteLine("Failure to determine Decoder type: WriteBlunamiSpeedCommand");
+                    //        return;
 
-                    }
+                    //}
 
                     if (loco.UsesLongAddress)
                     {
+                        baseCommand[1] = 0x04;
                         baseCommand[2] = (byte)loco.CV17;
                         baseCommand[3] = (byte)loco.CV18;
                         baseCommand[4] = 0x3F;
@@ -647,6 +918,7 @@ namespace SharpBlunamiControl
                     }
                     else
                     {
+                        baseCommand[1] = 0x03;
                         baseCommand[2] = (byte)loco.Id;
                         baseCommand[3] = 0x3F;
 
@@ -1062,6 +1334,18 @@ namespace SharpBlunamiControl
             }
         }
 
+        public bool UsesLongAddress
+        {
+            get
+            {
+                return usesLongAddress;
+            }
+            set
+            {
+                usesLongAddress = value;
+            }
+        }
+
         public int CV17
         {
             get
@@ -1156,21 +1440,23 @@ namespace SharpBlunamiControl
 
         }
 
-        public bool GradeCrossingWhistle
+        
+
+        public bool CylinderCocks
         {
             get
             {
-                return isGradeCrossingWhistleOn();
+                return isCylinderCocksOn();
             }
             set
             {
                 if (value)
-                    AFlags |= BlunamiEngineEffectCommandParams.A_GRADE_CROSSING_WHISTLE;
+                    DynamoFlags |= BlunamiEngineEffectCommandParams.CYLINDER_COCKS;
                 else
-                    AFlags ^= BlunamiEngineEffectCommandParams.A_GRADE_CROSSING_WHISTLE;
+                    DynamoFlags ^= BlunamiEngineEffectCommandParams.CYLINDER_COCKS;
             }
-
         }
+
 
         public bool Headlight
         {
@@ -1193,6 +1479,41 @@ namespace SharpBlunamiControl
             set
             {
                 direction = value;
+            }
+        }
+
+        /// <summary>
+        /// A RANGE
+        /// </summary>
+
+        public bool GradeCrossingWhistle
+        {
+            get
+            {
+                return isGradeCrossingWhistleOn();
+            }
+            set
+            {
+                if (value)
+                    AFlags |= BlunamiEngineEffectCommandParams.A_GRADE_CROSSING_WHISTLE;
+                else
+                    AFlags ^= BlunamiEngineEffectCommandParams.A_GRADE_CROSSING_WHISTLE;
+            }
+
+        }
+
+        public bool Blowdown
+        {
+            get
+            {
+                return isBlowdownOn();
+            }
+            set
+            {
+                if (value)
+                    AFlags |= BlunamiEngineEffectCommandParams.A_BLOWDOWN;
+                else
+                    AFlags ^= BlunamiEngineEffectCommandParams.A_BLOWDOWN;
             }
         }
 
@@ -1226,17 +1547,319 @@ namespace SharpBlunamiControl
             }
         }
 
-        public bool UsesLongAddress
+        /// <summary>
+        /// B RANGE
+        /// </summary>
+        public bool CutoffIncrease
         {
             get
             {
-                return usesLongAddress;
+                return isCutoffPlusOn();
             }
             set
             {
-                usesLongAddress = value;
+                if (value)
+                    BFlags |= BlunamiEngineEffectCommandParams.B_CUTOFF_INCREASE;
+                else
+                    BFlags ^= BlunamiEngineEffectCommandParams.B_CUTOFF_INCREASE;
             }
         }
+
+        public bool CutoffDecrease
+        {
+            get
+            {
+                return isCutoffMinusOn();
+            }
+            set
+            {
+                if (value)
+                    BFlags |= BlunamiEngineEffectCommandParams.B_CUTOFF_DECREASE;
+                else
+                    BFlags ^= BlunamiEngineEffectCommandParams.B_CUTOFF_DECREASE;
+            }
+        }
+
+        public bool Dimmer
+        {
+            get
+            {
+                return isDimmerOn();
+            }
+            set
+            {
+                if (value)
+                    BFlags |= BlunamiEngineEffectCommandParams.B_DIMMER_ENABLED;
+                else
+                    BFlags ^= BlunamiEngineEffectCommandParams.B_DIMMER_ENABLED;
+            }
+        }
+
+        public bool Mute
+        {
+            get
+            {
+                return isMuted();
+            }
+            set
+            {
+                if (value)
+                    BFlags |= BlunamiEngineEffectCommandParams.B_SOUND_MUTE;
+                else
+                    BFlags ^= BlunamiEngineEffectCommandParams.B_SOUND_MUTE;
+            }
+        }
+
+        /// <summary>
+        /// DE RANGE
+        /// </summary>
+        /// 
+        public bool Uncouple
+        {
+            get
+            {
+                return isCoupleOn();
+            }
+            set
+            {
+                if (value)
+                    DEFlags |= BlunamiEngineEffectCommandParams.DE_UNCOUPLE;
+                else
+                    DEFlags ^= BlunamiEngineEffectCommandParams.DE_UNCOUPLE;
+            }
+        }
+
+        public bool Momentum
+        {
+            get
+            {
+                return isMomentumOn();
+            }
+            set
+            {
+                if (value)
+                    DEFlags |= BlunamiEngineEffectCommandParams.DE_MOMENTUM_DISABLE;
+                else
+                    DEFlags ^= BlunamiEngineEffectCommandParams.DE_MOMENTUM_DISABLE;
+            }
+        }
+
+        public bool Waterstop
+        {
+            get
+            {
+                return isWaterStopOn();
+            }
+            set
+            {
+                if (value)
+                    DEFlags |= BlunamiEngineEffectCommandParams.DE_WATERSTOP;
+                else
+                    DEFlags ^= BlunamiEngineEffectCommandParams.DE_WATERSTOP;
+            }
+        }
+
+        public bool FuelStop
+        {
+            get
+            {
+                return isFuelStopOn();
+            }
+            set
+            {
+                if (value)
+                    DEFlags |= BlunamiEngineEffectCommandParams.DE_FUELSTOP;
+                else
+                    DEFlags ^= BlunamiEngineEffectCommandParams.DE_FUELSTOP;
+            }
+        }
+
+        public bool AshDump
+        {
+            get
+            {
+                return isAshDumpOn();
+            }
+            set
+            {
+                if (value)
+                    DEFlags |= BlunamiEngineEffectCommandParams.DE_ASH_DUMP;
+                else
+                    DEFlags ^= BlunamiEngineEffectCommandParams.DE_ASH_DUMP;
+            }
+        }
+
+        public bool HandBrake
+        {
+            get
+            {
+                return isHandBrakeOn();
+            }
+            set
+            {
+                if (value)
+                    DEFlags |= BlunamiEngineEffectCommandParams.DE_HANDBRAKE_ENABLE;
+                else
+                    DEFlags ^= BlunamiEngineEffectCommandParams.DE_HANDBRAKE_ENABLE;
+            }
+        }
+
+        public bool Wheelslip
+        {
+            get
+            {
+                return isWheelSlipOn();
+            }
+            set
+            {
+                if (value)
+                    DEFlags |= BlunamiEngineEffectCommandParams.DE_WHEEL_SLIP_ENABLE;
+                else
+                    DEFlags ^= BlunamiEngineEffectCommandParams.DE_WHEEL_SLIP_ENABLE;
+            }
+        }
+
+        public bool F20
+        {
+            get
+            {
+                return isF20On();
+            }
+            set
+            {
+                if (value)
+                    DEFlags |= BlunamiEngineEffectCommandParams.DE_FUNCTION_20;
+                else
+                    DEFlags ^= BlunamiEngineEffectCommandParams.DE_FUNCTION_20;
+            }
+        }
+
+        /// <summary>
+        /// DF RANGE
+        /// </summary>
+        public bool SanderValve
+        {
+            get
+            {
+                return isSanderOn();
+            }
+            set
+            {
+                if (value)
+                    DFFlags |= BlunamiEngineEffectCommandParams.DF_SANDER_VALVE;
+                else
+                    DFFlags ^= BlunamiEngineEffectCommandParams.DF_SANDER_VALVE;
+            }
+        }
+
+        public bool CabChatter
+        {
+            get
+            {
+                return isCabChatterOn();
+            }
+            set
+            {
+                if (value)
+                    DFFlags |= BlunamiEngineEffectCommandParams.DF_CAB_CHATTER;
+                else
+                    DFFlags ^= BlunamiEngineEffectCommandParams.DF_CAB_CHATTER;
+            }
+        }
+
+        public bool AllAboard
+        {
+            get
+            {
+                return isAllAboardOn();
+            }
+            set
+            {
+                if (value)
+                    DFFlags |= BlunamiEngineEffectCommandParams.DF_ALL_ABOARD;
+                else
+                    DFFlags ^= BlunamiEngineEffectCommandParams.DF_ALL_ABOARD;
+            }
+        }
+
+        public bool FX3
+        {
+            get
+            {
+                return isFX3On();
+            }
+            set
+            {
+                if (value)
+                    DFFlags |= BlunamiEngineEffectCommandParams.DF_FX3;
+                else
+                    DFFlags ^= BlunamiEngineEffectCommandParams.DF_FX3;
+            }
+        }
+
+        public bool FX4
+        {
+            get
+            {
+                return isFX4On();
+            }
+            set
+            {
+                if (value)
+                    DFFlags |= BlunamiEngineEffectCommandParams.DF_FX4;
+                else
+                    DFFlags ^= BlunamiEngineEffectCommandParams.DF_FX4;
+            }
+        }
+
+        public bool FX5
+        {
+            get
+            {
+                return isFX5On();
+            }
+            set
+            {
+                if (value)
+                    DFFlags |= BlunamiEngineEffectCommandParams.DF_FX5;
+                else
+                    DFFlags ^= BlunamiEngineEffectCommandParams.DF_FX5;
+            }
+        }
+
+        public bool FX6
+        {
+            get
+            {
+                return isFX6On();
+            }
+            set
+            {
+                if (value)
+                    DFFlags |= BlunamiEngineEffectCommandParams.DF_FX6;
+                else
+                    DFFlags ^= BlunamiEngineEffectCommandParams.DF_FX6;
+            }
+        }
+
+        public bool FX28
+        {
+            get
+            {
+                return isFX28On();
+            }
+            set
+            {
+                if (value)
+                    DFFlags |= BlunamiEngineEffectCommandParams.DF_FX28;
+                else
+                    DFFlags ^= BlunamiEngineEffectCommandParams.DF_FX28;
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
 
         public BlunamiEngineEffectCommandParams DynamoFlags
         {

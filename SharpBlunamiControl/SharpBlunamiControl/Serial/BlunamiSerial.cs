@@ -86,6 +86,8 @@ namespace SharpBlunamiControl
         bool boostButtonPressed = false;
         bool brakeButtonPressed = false;
         bool directionButtonPressed = false;
+        bool setButtonPressed = false;
+        bool lowMomentumPressed,medMomentumPressed,highMomentumPressed = false;
 
         bool num0Pressed, num1Pressed, num2Pressed, num3Pressed, num4Pressed, num5Pressed, num6Pressed, num7Pressed, num8Pressed, num9Pressed = false;
 
@@ -96,7 +98,7 @@ namespace SharpBlunamiControl
         float timer;
         float lastPressTime;
         float buttonHoldInterval = 115;
-        bool debugString = true;
+        bool debugString = false;
 
 
         int keyPadCVPage = 0;
@@ -122,7 +124,7 @@ namespace SharpBlunamiControl
 
         NOTHING, NOTHING, FX3,
         FX4, FX5, FX6
-        FX7, FX8, NOTHING
+        FX28, NOTHING, NOTHING
                MUTE
          
          
@@ -350,7 +352,7 @@ namespace SharpBlunamiControl
 
             WriteBlunamiSpeedCommand(loco);
 
-            if (debugString)
+            if (showDialogueText)
                 Console.WriteLine("{0}: Speed: {1}", loco.BluetoothLeDevice.Name, loco.Speed);
         }
 
@@ -493,6 +495,7 @@ namespace SharpBlunamiControl
                     {
                         if (debugString)
                             Console.WriteLine("Set Address Button", dataid);
+                        setButtonPressed = true;
                         break;
                     }
 

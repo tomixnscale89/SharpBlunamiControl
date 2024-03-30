@@ -192,11 +192,42 @@ namespace SharpBlunamiControl
 
                                 }
 
-                                
+                                // Front Coupler - Hooked on FX3
+                                if(BlunamiControl.frontCouplerButtonPressed)
+                                {
+                                    BlunamiControl.lastUsedEngine.FX3 = !BlunamiControl.lastUsedEngine.FX3;
+                                    BlunamiControl.frontCouplerButtonPressed = false;
+                                    await BlunamiControl.WriteBlunamiDFGroupEffectCommand(BlunamiControl.lastUsedEngine);
+
+                                    Console.WriteLine("{0}: FX3: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.FX3 ? "On" : "Off");
+
+                                }
+
+                                // Rear Coupler - Hooked on FX4
+                                if (BlunamiControl.rearCouplerButtonPressed)
+                                {
+                                    BlunamiControl.lastUsedEngine.FX4 = !BlunamiControl.lastUsedEngine.FX4;
+                                    BlunamiControl.rearCouplerButtonPressed = false;
+                                    await BlunamiControl.WriteBlunamiDFGroupEffectCommand(BlunamiControl.lastUsedEngine);
+
+                                    Console.WriteLine("{0}: FX4: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.FX4 ? "On" : "Off");
+
+                                }
 
 
+                                await BlunamiControl.KeyPadCommands(BlunamiControl.keyPadCVPage);
 
-                                
+                                // Set Button
+                                if (BlunamiControl.setButtonPressed)
+                                {
+                                    BlunamiControl.setButtonPressed = false;
+                                    BlunamiControl.keyPadCVPage++;
+                                    if (BlunamiControl.keyPadCVPage > 2)
+                                        BlunamiControl.keyPadCVPage = 0;
+                                    Console.WriteLine("Using Keypad Page:{0}", BlunamiControl.keyPadCVPage);
+                                    
+                                }
+
 
 
                             }
@@ -251,6 +282,7 @@ namespace SharpBlunamiControl
         {
             switch(keyPadPage)
             {
+
                 default:
                 case 0:
                     {
@@ -261,40 +293,96 @@ namespace SharpBlunamiControl
                             num1Pressed = false;
                             await WriteBlunamiAGroupEffectCommand(lastUsedEngine);
 
-                            Console.WriteLine("{0}: Grade Crossing Whistle: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.GradeCrossingWhistle ? "On" : "Off");
-
-                        }
-
-                        // Grade Crossing Whistle Enable/Disable
-                        if (num2Pressed)
-                        {
-                           lastUsedEngine.GradeCrossingWhistle = !lastUsedEngine.GradeCrossingWhistle;
-                            num2Pressed = false;
-                            await WriteBlunamiAGroupEffectCommand(lastUsedEngine);
-
-                            Console.WriteLine("{0}: Grade Crossing Whistle: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.GradeCrossingWhistle ? "On" : "Off");
+                            Console.WriteLine("{0}: Grade Crossing Horn: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.GradeCrossingWhistle ? "On" : "Off");
 
                         }
 
                         // Short Whistle Enable/Disable
-                        if (num3Pressed)
+                        if (num2Pressed)
                         {
                             lastUsedEngine.ShortWhistle = !lastUsedEngine.ShortWhistle;
+                            num2Pressed = false;
+                            await WriteBlunamiDynamoGroupEffectCommand(lastUsedEngine);
+
+                            Console.WriteLine("{0}: Short Horn: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.ShortWhistle ? "On" : "Off");
+
+                        }
+
+                        // Cylinder Cocks Enable/Disable
+                        if (num3Pressed)
+                        {
+                            lastUsedEngine.CylinderCocks = !lastUsedEngine.CylinderCocks;
                             num3Pressed = false;
                             await WriteBlunamiDynamoGroupEffectCommand(lastUsedEngine);
 
-                            Console.WriteLine("{0}: Short Whistle: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.ShortWhistle ? "On" : "Off");
+                            Console.WriteLine("{0}: CylinderCocks/DynamicBrake/Panto: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.CylinderCocks ? "On" : "Off");
 
                         }
 
                         // Cutoff+ Enable/Disable
                         if (num4Pressed)
                         {
-                            lastUsedEngine.ShortWhistle = !lastUsedEngine.ShortWhistle;
+                            lastUsedEngine.CutoffIncrease = !lastUsedEngine.CutoffIncrease;
                             num4Pressed = false;
-                            await WriteBlunamiDynamoGroupEffectCommand(lastUsedEngine);
+                            await WriteBlunamiBGroupEffectCommand(lastUsedEngine);
 
-                            Console.WriteLine("{0}: Cutoff +: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.ShortWhistle ? "On" : "Off");
+                            Console.WriteLine("{0}: Cutoff +/RPM/Startup: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.CutoffIncrease ? "On" : "Off");
+
+                        }
+
+                        // Cutoff- Enable/Disable
+                        if (num5Pressed)
+                        {
+                            lastUsedEngine.CutoffDecrease = !lastUsedEngine.CutoffDecrease;
+                            num5Pressed = false;
+                            await WriteBlunamiBGroupEffectCommand(lastUsedEngine);
+
+                            Console.WriteLine("{0}: Cutoff -/RPM/Shutdown: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.CutoffDecrease ? "On" : "Off");
+
+                        }
+
+
+                        // Blowdown Enable/Disable
+                        if (num6Pressed)
+                        {
+                            lastUsedEngine.Blowdown = !lastUsedEngine.Blowdown;
+                            num6Pressed = false;
+                            await WriteBlunamiAGroupEffectCommand(lastUsedEngine);
+
+                            Console.WriteLine("{0}: Blowdown/StraightToEight: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.Blowdown ? "On" : "Off");
+
+                        }
+
+                        // Dimmer Enable/Disable
+                        if (num7Pressed)
+                        {
+                            lastUsedEngine.Dimmer = !lastUsedEngine.Dimmer;
+                            num7Pressed = false;
+                            await WriteBlunamiBGroupEffectCommand(lastUsedEngine);
+
+                            Console.WriteLine("{0}: Dimmer: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.Dimmer ? "On" : "Off");
+
+                        }
+
+                        // Couple Enable/Disable
+                        if (num8Pressed)
+                        {
+                            lastUsedEngine.Uncouple = !lastUsedEngine.Uncouple;
+                            num8Pressed = false;
+                            await WriteBlunamiDEGroupEffectCommand(lastUsedEngine);
+
+                            Console.WriteLine("{0}: Couple: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.Uncouple ? "On" : "Off");
+
+                        }
+
+                        // Momentum (Switching Mode) Mode Enable/Disable
+                        if (num9Pressed)
+                        {
+                            lastUsedEngine.Momentum = !lastUsedEngine.Momentum;
+                            num9Pressed = false;
+                            await WriteBlunamiDEGroupEffectCommand(lastUsedEngine);
+
+                            Console.WriteLine("{0}: Switching Mode: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.Momentum ? "On" : "Off");
 
                         }
 
@@ -303,14 +391,198 @@ namespace SharpBlunamiControl
                     
                 case 1:
                     {
+                        // HandBrake Enable/Disable
+                        if (num1Pressed)
+                        {
+                            lastUsedEngine.HandBrake = !lastUsedEngine.HandBrake;
+                            num1Pressed = false;
+                            await WriteBlunamiAGroupEffectCommand(lastUsedEngine);
 
+                            Console.WriteLine("{0}: HandBrake: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.HandBrake ? "On" : "Off");
+
+                        }
+
+                        // WaterStop Enable/Disable
+                        if (num2Pressed)
+                        {
+                            lastUsedEngine.Waterstop = !lastUsedEngine.Waterstop;
+                            num2Pressed = false;
+                            await WriteBlunamiDEGroupEffectCommand(lastUsedEngine);
+
+                            Console.WriteLine("{0}: WaterStop: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.Waterstop ? "On" : "Off");
+
+                        }
+
+                        // Fuel Loading Enable/Disable
+                        if (num3Pressed)
+                        {
+                            lastUsedEngine.FuelStop = !lastUsedEngine.FuelStop;
+                            num3Pressed = false;
+                            await WriteBlunamiDEGroupEffectCommand(lastUsedEngine);
+
+                            Console.WriteLine("{0}: FuelLoad: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.FuelStop ? "On" : "Off");
+
+                        }
+
+                        // Ashdump Enable/Disable
+                        if (num4Pressed)
+                        {
+                            lastUsedEngine.AshDump = !lastUsedEngine.AshDump;
+                            num4Pressed = false;
+                            await WriteBlunamiDEGroupEffectCommand(lastUsedEngine);
+
+                            Console.WriteLine("{0}: Ash Dump: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.AshDump ? "On" : "Off");
+
+                        }
+
+                        // Wheel Slip- Enable/Disable
+                        if (num5Pressed)
+                        {
+                            lastUsedEngine.Wheelslip = !lastUsedEngine.Wheelslip;
+                            num5Pressed = false;
+                            await WriteBlunamiDEGroupEffectCommand(lastUsedEngine);
+
+                            Console.WriteLine("{0}: WheelSlip: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.Wheelslip ? "On" : "Off");
+
+                        }
+
+
+                        // Injector/ F20 Enable/Disable
+                        if (num6Pressed)
+                        {
+                            lastUsedEngine.F20 = !lastUsedEngine.F20;
+                            num6Pressed = false;
+                            await WriteBlunamiDEGroupEffectCommand(lastUsedEngine);
+
+                            Console.WriteLine("{0}: F20: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.F20 ? "On" : "Off");
+
+                        }
+
+                        // Sander Enable/Disable
+                        if (num7Pressed)
+                        {
+                            lastUsedEngine.SanderValve = !lastUsedEngine.SanderValve;
+                            num7Pressed = false;
+                            await WriteBlunamiDFGroupEffectCommand(lastUsedEngine);
+
+                            Console.WriteLine("{0}: SanderValve: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.SanderValve ? "On" : "Off");
+
+                        }
+
+                        // Cab Chatter Enable/Disable
+                        if (num8Pressed)
+                        {
+                            lastUsedEngine.CabChatter = !lastUsedEngine.CabChatter;
+                            num8Pressed = false;
+                            await WriteBlunamiDFGroupEffectCommand(lastUsedEngine);
+
+                            Console.WriteLine("{0}: CabChatter: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.CabChatter ? "On" : "Off");
+
+                        }
+
+                        // All Aboard Mode Enable/Disable
+                        if (num9Pressed)
+                        {
+                            lastUsedEngine.AllAboard = !lastUsedEngine.AllAboard;
+                            num9Pressed = false;
+                            await WriteBlunamiDFGroupEffectCommand(lastUsedEngine);
+
+                            Console.WriteLine("{0}: AllAboard: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.AllAboard ? "On" : "Off");
+
+                        }
                     }
                     break;
                 case 2:
                     {
+                        if (num1Pressed)
+                        {
+                            num1Pressed = false;
 
+                        }
+
+                        if (num2Pressed)
+                        {
+                            num2Pressed = false;
+                        }
+
+                        // FX3 Enable/Disable
+                        if (num3Pressed)
+                        {
+                            lastUsedEngine.FX3 = !lastUsedEngine.FX3;
+                            num3Pressed = false;
+                            await WriteBlunamiDFGroupEffectCommand(lastUsedEngine);
+
+                            Console.WriteLine("{0}: FX3: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.FX3 ? "On" : "Off");
+
+                        }
+
+                        // FX4 Enable/Disable
+                        if (num4Pressed)
+                        {
+                            lastUsedEngine.FX4 = !lastUsedEngine.FX4;
+                            num4Pressed = false;
+                            await WriteBlunamiDFGroupEffectCommand(lastUsedEngine);
+
+                            Console.WriteLine("{0}: FX4: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.FX4 ? "On" : "Off");
+
+                        }
+
+                        // FX5 Enable/Disable
+                        if (num5Pressed)
+                        {
+                            lastUsedEngine.FX5 = !lastUsedEngine.FX5;
+                            num5Pressed = false;
+                            await WriteBlunamiDFGroupEffectCommand(lastUsedEngine);
+
+                            Console.WriteLine("{0}: FX5: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.FX5 ? "On" : "Off");
+
+                        }
+
+
+                        // FX6 Enable/Disable
+                        if (num6Pressed)
+                        {
+                            lastUsedEngine.FX6 = !lastUsedEngine.FX6;
+                            num6Pressed = false;
+                            await WriteBlunamiDFGroupEffectCommand(lastUsedEngine);
+
+                            Console.WriteLine("{0}: FX6: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.FX6 ? "On" : "Off");
+
+                        }
+
+                        // FX28 Enable/Disable
+                        if (num7Pressed)
+                        {
+                            lastUsedEngine.FX28 = !lastUsedEngine.FX28;
+                            num7Pressed = false;
+                            await WriteBlunamiDFGroupEffectCommand(lastUsedEngine);
+
+                            Console.WriteLine("{0}: FX28: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.FX28 ? "On" : "Off");
+
+                        }
+
+                        if (num8Pressed)
+                        {
+                            num8Pressed = false;
+                        }
+
+                        if (num9Pressed)
+                        {
+                            num9Pressed = false;
+                        }
                     }
                     break;
+
+            }
+
+            // Momentum Mode Enable/Disable
+            if (num0Pressed)
+            {
+                lastUsedEngine.Mute = !lastUsedEngine.Mute;
+                num0Pressed = false;
+                await WriteBlunamiBGroupEffectCommand(lastUsedEngine);
+
+                Console.WriteLine("{0}: Mute: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.Mute ? "On" : "Off");
 
             }
         }
