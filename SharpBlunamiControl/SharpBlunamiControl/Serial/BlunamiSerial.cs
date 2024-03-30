@@ -98,6 +98,38 @@ namespace SharpBlunamiControl
         float buttonHoldInterval = 115;
         bool debugString = true;
 
+
+        int keyPadCVPage = 0;
+
+
+        /*
+         
+        PAGE 0:
+
+        SXS , SHORT WHISTLE , CYLINDER COCKS
+        CUTOFF+, CUTOFF-, BLOWDOWN
+        DIMMER, COUPLE/UNCOUPLE, SWITCHING MODE
+                MUTE
+
+        PAGE 1:
+
+        WHEEL CHAINS, WATER STOP, FUEL LOADING
+        ASH DUMP, WHEEL SLIP, INJECTOR
+        SANDER VALVE, CAB CHATTER, ALL ABOARD/COACH DOORS
+                        MUTE
+
+        PAGE 2:
+
+        NOTHING, NOTHING, FX3,
+        FX4, FX5, FX6
+        FX7, FX8, NOTHING
+               MUTE
+         
+         
+         
+         */
+
+
         bool SelectSerialPort()
         {
             availablePorts = SerialPort.GetPortNames(); // Get all available Serial Ports
@@ -212,7 +244,7 @@ namespace SharpBlunamiControl
                                 {
                                     case (int)TMCCCommandType.CT_ACTION:
                                         {
-                                            SetTMCCButtonSates(TMCCPacket.Item2, blunami);
+                                            SetTMCCActionButtonSates(TMCCPacket.Item2, blunami);
                                             break;
                                         }
                                     case (int)TMCCCommandType.CT_RELATIVE_SPEED:
@@ -223,6 +255,11 @@ namespace SharpBlunamiControl
                                         }
                                     case (int)TMCCCommandType.CT_ABSOLUTE_SPEED:
                                         {
+                                            break;
+                                        }
+                                    case (int)TMCCCommandType.CT_EXTENDED: // SET Button, Momentum buttons
+                                        {
+                                            SetTMCCExtendedButtonSates(TMCCPacket.Item2, blunami);
                                             break;
                                         }
                                 }
@@ -317,7 +354,7 @@ namespace SharpBlunamiControl
                 Console.WriteLine("{0}: Speed: {1}", loco.BluetoothLeDevice.Name, loco.Speed);
         }
 
-        void SetTMCCButtonSates(int dataid, BlunamiEngine loco)
+        void SetTMCCActionButtonSates(int dataid, BlunamiEngine loco)
         {
             switch (dataid)
             {
@@ -333,24 +370,24 @@ namespace SharpBlunamiControl
                             await WriteBlunamiDynamoGroupEffectCommand(loco);
 
                         }).GetAwaiter().GetResult();
-                        //if (debugString)
-                        //    Console.WriteLine("Horn pressed");
+                        if (debugString)
+                            Console.WriteLine("Horn pressed");
                         break;
                     }
 
                 case (int)EngineCommandParams.EC_RING_BELL:
                     {
                         bellButtonPressed = true;
-                        //if (debugString)
-                        //    Console.WriteLine("Bell pressed\n");
+                        if (debugString)
+                            Console.WriteLine("Bell pressed\n");
                         break;
                     }
 
                 case (int)EngineCommandParams.EC_TOGGLE_DIRECTION:
                     {
                         directionButtonPressed = true;
-                        //if (debugString)
-                        //    Console.WriteLine("Toggle direction pressed\n");
+                        if (debugString)
+                            Console.WriteLine("Toggle direction pressed\n");
                         break;
                     }
 
@@ -365,8 +402,8 @@ namespace SharpBlunamiControl
                 case (int)EngineCommandParams.EC_AUX_2_OPTION_1:
                     {
                         headlightButtonPressed = true;
-                        //if (debugString)
-                        //    Console.WriteLine("Aux2 pressed\n");
+                        if (debugString)
+                            Console.WriteLine("Aux2 pressed\n");
                         break;
                     }
 
@@ -389,29 +426,31 @@ namespace SharpBlunamiControl
                 case (int)EngineCommandParams.EC_BOOST_SPEED:
                     {
                         boostButtonPressed = true;
-                        //if (debugString)
-                        //    Console.WriteLine("Boost pressed\n");
+                        if (debugString)
+                            Console.WriteLine("Boost pressed\n");
                         break;
                     }
 
                 case (int)EngineCommandParams.EC_BRAKE_SPEED:
                     {
                         brakeButtonPressed = true;
-                        //if (debugString)
-                        //    Console.WriteLine("Brake pressed\n");
+                        if (debugString)
+                            Console.WriteLine("Brake pressed\n");
                         break;
                     }
 
                 default:
                     {
                         dataid &= (int)EngineCommandParams.EC_NUMERIC_MASK;
-                        //if (debugString)
-                        //    Console.WriteLine("Numerical pressed: {0}", dataid);
+                        if (debugString)
+                            Console.WriteLine("Numerical pressed: {0}", dataid);
                         switch (dataid)
                         {
                             case 0:
+                                num0Pressed = true;
                                 break;
                             case 1:
+                                num1Pressed = true;
                                 break;
                             case 2:
                                 num2Pressed = true;
@@ -420,18 +459,67 @@ namespace SharpBlunamiControl
                                 num3Pressed = true;
                                 break;
                             case 4:
+                                num4Pressed = true;
                                 break;
                             case 5:
+                                num5Pressed = true;
                                 break;
                             case 6:
+                                num6Pressed = true;
                                 break;
                             case 7:
+                                num7Pressed = true;
                                 break;
                             case 8:
+                                num8Pressed = true;
                                 break;
                             case 9:
+                                num9Pressed = true;
                                 break;
                         }
+                        break;
+                    }
+
+            }
+            lastPressTime = (float)stopWatch.Elapsed.TotalMilliseconds;
+        }
+
+        void SetTMCCExtendedButtonSates(int dataid, BlunamiEngine loco)
+        {
+            switch (dataid)
+            {
+
+                case (int)EngineCommandParams.ETC_SET_TMCC_ADDRESS:
+                    {
+                        if (debugString)
+                            Console.WriteLine("Set Address Button", dataid);
+                        break;
+                    }
+
+                case (int)EngineCommandParams.ETC_SET_MOMENTUM_HIGH:
+                    {
+                        if (debugString)
+                            Console.WriteLine("Momentum High Button", dataid);
+                        break;
+                    }
+
+                case (int)EngineCommandParams.ETC_SET_MOMENTUM_MEDIUM:
+                    {
+                        if (debugString)
+                            Console.WriteLine("Momentum Medium Button", dataid);
+                        break;
+                    }
+
+                case (int)EngineCommandParams.ETC_SET_MOMENTUM_LOW:
+                    {
+                        if (debugString)
+                            Console.WriteLine("Momentum Low Button", dataid);
+                        break;
+                    }
+
+
+                default:
+                    {
                         break;
                     }
 

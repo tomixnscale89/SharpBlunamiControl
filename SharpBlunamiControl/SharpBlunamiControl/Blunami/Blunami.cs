@@ -22,38 +22,38 @@ public enum BlunamiEngineEffectCommandParams
     RESET = 0xFE,
     RESET2 = 0,
 
-    BELL = 0x1,
-    LONG_WHISTLE = 0x2,
-    SHORT_WHISTLE = 0x4,
-    CYLINDER_COCKS = 0x8,
+    BELL = 0x1, //F1
+    LONG_WHISTLE = 0x2, // F2 Diesel - Airhorn
+    SHORT_WHISTLE = 0x4,//F3, Diesel - Short Airhorn
+    CYLINDER_COCKS = 0x8, // F4, Diesel - Dynamic Brake, Electric - Panto Raise/Lower
 
-    A_GRADE_CROSSING_WHISTLE = 0x1,
-    A_BLOWDOWN = 0x2,
-    A_BRAKE_ENABLED = 0x4,
-    A_BRAKE_SELECT = 0x8,
+    A_GRADE_CROSSING_WHISTLE = 0x1, // F9
+    A_BLOWDOWN = 0x2, // F10 , Diesel - Straight to Eight, Electric - Nothing
+    A_BRAKE_ENABLED = 0x4, // F11
+    A_BRAKE_SELECT = 0x8, // F12
 
-    B_CUTOFF_INCREASE = 0x1,
-    B_CUTOFF_DECREASE = 0x2,
-    B_DIMMER_ENABLED = 0x4,
-    B_SOUND_MUTE = 0x8,
+    B_CUTOFF_INCREASE = 0x1,// F5, Diesel - RPM+ / Engine Startup, Electric - Stop request Bell
+    B_CUTOFF_DECREASE = 0x2, // F6, Diesel - RPM- / Engine Shutdown, Electric - Pneumatic Doors
+    B_DIMMER_ENABLED = 0x4, // F7
+    B_SOUND_MUTE = 0x8, // F8
 
-    DE_UNCOUPLE = 0x1,
-    DE_MOMENTUM_DISABLE = 0x2,
-    DE_HANDBRAKE_ENABLE = 0x4,
-    DE_WATERSTOP = 0x8,
-    DE_FUELSTOP = 0x10,
-    DE_ASH_DUMP = 0x20,
-    DE_WHEEL_SLIP_ENABLE = 0x40,
-    DE_FUNCTION_20 = 0x80,
+    DE_UNCOUPLE = 0x1, // F13
+    DE_MOMENTUM_DISABLE = 0x2, // F14, switching? 
+    DE_HANDBRAKE_ENABLE = 0x4, // F15, wheel chains? 
+    DE_WATERSTOP = 0x8, // F16, Diesel - HEP Mode, Electric - Nothing
+    DE_FUELSTOP = 0x10, // F17, Diesel - Fuel Loading, Electric - Nothing
+    DE_ASH_DUMP = 0x20, //F18, Diesel - General Service
+    DE_WHEEL_SLIP_ENABLE = 0x40, // F19,  Diesel - Straight to Idle, Electric - Nothing
+    DE_FUNCTION_20 = 0x80, // F20,  Diesel - Steam Generator and Auxilary Help Generator
 
-    DF_SANDER_VALVE = 0x1,
-    DF_CAB_CHATTER = 0x2,
-    DF_ALL_ABOARD = 0x4,
-    DF_FX3 = 0x8,
-    DF_FX4 = 0x10,
-    DF_FX5 = 0x20,
-    DF_FX6 = 0x40,
-    DF_FX28 = 0x80
+    DF_SANDER_VALVE = 0x1, // F21
+    DF_CAB_CHATTER = 0x2, // F22
+    DF_ALL_ABOARD = 0x4, // F23
+    DF_FX3 = 0x8, // F24
+    DF_FX4 = 0x10, // F25
+    DF_FX5 = 0x20, // F26
+    DF_FX6 = 0x40, // F27
+    DF_FX28 = 0x80 // F28
 };
 
 enum BlunamiEngineTypes
@@ -758,6 +758,11 @@ namespace SharpBlunamiControl
 
         bool usesLongAddress = false;
 
+
+        /// <summary>
+        /// Dynamo region flags
+        /// </summary>
+        /// <returns></returns>
         bool isBellOn()
         {
             return (dynamoFlags & BlunamiEngineEffectCommandParams.BELL) != (BlunamiEngineEffectCommandParams)0;
@@ -772,9 +777,24 @@ namespace SharpBlunamiControl
             return (dynamoFlags & BlunamiEngineEffectCommandParams.SHORT_WHISTLE) != (BlunamiEngineEffectCommandParams)0;
         }
 
+        bool isCylinderCocksOn()
+        {
+            return (dynamoFlags & BlunamiEngineEffectCommandParams.CYLINDER_COCKS) != (BlunamiEngineEffectCommandParams)0;
+        }
+
+        /// <summary>
+        /// A group region flags
+        /// </summary>
+        /// <returns></returns>
+
         bool isGradeCrossingWhistleOn()
         {
             return (aFlags & BlunamiEngineEffectCommandParams.A_GRADE_CROSSING_WHISTLE) != (BlunamiEngineEffectCommandParams)0;
+        }
+
+        bool isBlowdownOn()
+        {
+            return (aFlags & BlunamiEngineEffectCommandParams.A_BLOWDOWN) != (BlunamiEngineEffectCommandParams)0;
         }
 
         bool BrakeMode()
@@ -786,6 +806,128 @@ namespace SharpBlunamiControl
         {
             return (aFlags & BlunamiEngineEffectCommandParams.A_BRAKE_ENABLED) != (BlunamiEngineEffectCommandParams)0;
         }
+
+        /// <summary>
+        /// B region flags
+        /// </summary>
+        /// <returns></returns>
+
+        bool isCutoffPlusOn()
+        {
+            return (bFlags & BlunamiEngineEffectCommandParams.B_CUTOFF_INCREASE) != (BlunamiEngineEffectCommandParams)0;
+        }
+
+        bool isCutoffMinusOn()
+        {
+            return (bFlags & BlunamiEngineEffectCommandParams.B_CUTOFF_DECREASE) != (BlunamiEngineEffectCommandParams)0;
+        }
+
+        bool isDimmerOn()
+        {
+            return (bFlags & BlunamiEngineEffectCommandParams.B_DIMMER_ENABLED) != (BlunamiEngineEffectCommandParams)0;
+        }
+
+        bool isMuted()
+        {
+            return (bFlags & BlunamiEngineEffectCommandParams.B_SOUND_MUTE) != (BlunamiEngineEffectCommandParams)0;
+        }
+
+
+        /// <summary>
+        /// DE Region flags
+        /// </summary>
+        /// <returns></returns>
+        bool isCoupleOn()
+        {
+            return (deFlags & BlunamiEngineEffectCommandParams.DE_UNCOUPLE) != (BlunamiEngineEffectCommandParams)0;
+        }
+
+        bool isMomentumOn()
+        {
+            return (deFlags & BlunamiEngineEffectCommandParams.DE_MOMENTUM_DISABLE) != (BlunamiEngineEffectCommandParams)0;
+        }
+
+        bool isHandBrakeOn()
+        {
+            return (deFlags & BlunamiEngineEffectCommandParams.DE_HANDBRAKE_ENABLE) != (BlunamiEngineEffectCommandParams)0;
+        }
+
+        bool isWaterStopOn()
+        {
+            return (deFlags & BlunamiEngineEffectCommandParams.DE_WATERSTOP) != (BlunamiEngineEffectCommandParams)0;
+        }
+
+        bool isFuelStopOn()
+        {
+            return (deFlags & BlunamiEngineEffectCommandParams.DE_FUELSTOP) != (BlunamiEngineEffectCommandParams)0;
+        }
+
+        bool isAshDumpOn()
+        {
+            return (deFlags & BlunamiEngineEffectCommandParams.DE_ASH_DUMP) != (BlunamiEngineEffectCommandParams)0;
+        }
+
+        bool isWheelSlipOn()
+        {
+            return (deFlags & BlunamiEngineEffectCommandParams.DE_WHEEL_SLIP_ENABLE) != (BlunamiEngineEffectCommandParams)0;
+        }
+
+        bool isF20On() 
+        {
+            return (deFlags & BlunamiEngineEffectCommandParams.DE_FUNCTION_20) != (BlunamiEngineEffectCommandParams)0;
+        }
+
+        /// <summary>
+        /// DF Region flags
+        /// </summary>
+        /// <returns></returns>
+        bool isSanderOn()
+        {
+            return (dfFlags & BlunamiEngineEffectCommandParams.DF_SANDER_VALVE) != (BlunamiEngineEffectCommandParams)0;
+        }
+
+        bool isCabChatterOn()
+        {
+            return (dfFlags & BlunamiEngineEffectCommandParams.DF_CAB_CHATTER) != (BlunamiEngineEffectCommandParams)0;
+        }
+
+        bool isAllAboardOn()
+        {
+            return (dfFlags & BlunamiEngineEffectCommandParams.DF_ALL_ABOARD) != (BlunamiEngineEffectCommandParams)0;
+        }
+
+        bool isFX3On()
+        {
+            return (dfFlags & BlunamiEngineEffectCommandParams.DF_FX3) != (BlunamiEngineEffectCommandParams)0;
+        }
+
+        bool isFX4On()
+        {
+            return (dfFlags & BlunamiEngineEffectCommandParams.DF_FX4) != (BlunamiEngineEffectCommandParams)0;
+        }
+
+        bool isFX5On()
+        {
+            return (dfFlags & BlunamiEngineEffectCommandParams.DF_FX5) != (BlunamiEngineEffectCommandParams)0;
+        }
+
+        bool isFX6On()
+        {
+            return (dfFlags & BlunamiEngineEffectCommandParams.DF_FX6) != (BlunamiEngineEffectCommandParams)0;
+        }
+
+        bool isFX28On() // This enables both FX7 and FX8
+        {
+            return (dfFlags & BlunamiEngineEffectCommandParams.DF_FX28) != (BlunamiEngineEffectCommandParams)0;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="bluetoothLEDevice"></param>
+        /// <param name="address"></param>
+        /// <param name="decoderType"></param>
+        /// <param name="speed"></param>
 
         public BlunamiEngine(BluetoothLEDevice bluetoothLEDevice, int address, int decoderType, int speed)
         {
@@ -1117,6 +1259,42 @@ namespace SharpBlunamiControl
             set
             {
                 aFlags = (BlunamiEngineEffectCommandParams)value;
+            }
+        }
+
+        public BlunamiEngineEffectCommandParams BFlags
+        {
+            get
+            {
+                return bFlags;
+            }
+            set
+            {
+                bFlags = (BlunamiEngineEffectCommandParams)value;
+            }
+        }
+
+        public BlunamiEngineEffectCommandParams DEFlags
+        {
+            get
+            {
+                return deFlags;
+            }
+            set
+            {
+                deFlags = (BlunamiEngineEffectCommandParams)value;
+            }
+        }
+
+        public BlunamiEngineEffectCommandParams DFFlags
+        {
+            get
+            {
+                return dfFlags;
+            }
+            set
+            {
+                dfFlags = (BlunamiEngineEffectCommandParams)value;
             }
         }
 

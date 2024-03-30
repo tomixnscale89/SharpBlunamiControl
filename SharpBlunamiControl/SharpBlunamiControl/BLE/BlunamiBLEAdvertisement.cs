@@ -193,7 +193,12 @@ namespace SharpBlunamiControl
         private async void OnAdvertisementWatcherStopped(BluetoothLEAdvertisementWatcher watcher, BluetoothLEAdvertisementWatcherStoppedEventArgs eventArgs)
         {
             // Notify the user that the watcher was stopped
-
+            if(eventArgs.Error == BluetoothError.RadioNotAvailable)
+            {
+                Console.WriteLine("No Bluetooth Radio found.");
+                wantsToExit = true;
+            }
+            
             Console.WriteLine(string.Format("Watcher stopped or aborted: {0}", eventArgs.Error.ToString()));
         }
     }

@@ -24,12 +24,19 @@ namespace SharpBlunamiControl
         bool wantsToExit = false;
         static bool resetBlunamiSettings = false;
 
+        
+
+        bool showDialogueText = true;
+
         Stopwatch stopWatch = new Stopwatch();
 
 
         [STAThread]
         static void Main(string[] args)
         {
+            //Application.Run(new SharpBlunamiControl.GUI.SharpBlunamiControl());
+
+
 
             Console.WriteLine("Welcome to SharpBlunamiControl.");
             Console.WriteLine("Please connect your DB9 Cable into a SER2, BASE1, BASE1L, BASE 2, or BASE3.");
@@ -61,11 +68,6 @@ namespace SharpBlunamiControl
                 //Console.WriteLine("Found the following devices.. ok to connect?");
 
 
-                //Console.WriteLine("Wanting to exit");
-
-                //Console.ReadLine();
-
-
                 // Collect all Blunami Devices and add them to our Blunami Class
 
                 Task.Run(async () =>
@@ -94,19 +96,25 @@ namespace SharpBlunamiControl
                     }
                 }).GetAwaiter().GetResult();
 
-                Console.WriteLine("");
-                Console.WriteLine("Found the following Blunami engines:");
-                BlunamiControl.FoundBlunamiDevices.ForEach(i => Console.WriteLine("{0},TMCC ID: {1}, Decoder: {2}", i.BluetoothLeDevice.Name, i.Id, BlunamiControl.PrintDecoderName(i.DecoderType)));
-                BlunamiControl.stopWatch.Start();
-                Console.WriteLine("");
+                if (BlunamiControl.FoundBluetoothDevices.Count > 0)
+                {
+                    
 
-                Console.WriteLine("When you are finished, press the HALT button to shut down the application.");
-                Console.WriteLine("To control your trains, please use the number AFTER the name of your Blunami decoder above.");
+                    Console.WriteLine("");
+                    Console.WriteLine("Found the following Blunami engines:");
+                    BlunamiControl.FoundBlunamiDevices.ForEach(i => Console.WriteLine("{0},TMCC ID: {1}, Decoder: {2}", i.BluetoothLeDevice.Name, i.TMCCID, BlunamiControl.PrintDecoderName(i.DecoderType)));
+                    BlunamiControl.stopWatch.Start();
+                    Console.WriteLine("");
 
+                    Console.WriteLine("When you are finished, press the HALT button to shut down the application.");
+                    Console.WriteLine("To control your trains, please use the number AFTER the name of your Blunami decoder above.");
+                }
+                else
+                {
+                    BlunamiControl.wantsToExit = true;
+                    Console.WriteLine("Found no devices. Exiting....");
 
-
-                ////await BlunamiControl.QueryBlunamiServices(BlunamiControl.FoundBluetoothDevices[0]);
-                //await ReadDecoderType(BlunamiControl.FoundBluetoothDevices[0]);
+                }
 
                 while (!BlunamiControl.wantsToExit)
                 {
@@ -146,7 +154,7 @@ namespace SharpBlunamiControl
 
                                     BlunamiControl.lastUsedEngine.Headlight = !BlunamiControl.lastUsedEngine.Headlight;
                                     await BlunamiControl.WriteBlunamiDynamoGroupEffectCommand(BlunamiControl.lastUsedEngine);
-                                    Console.WriteLine("{0}: Headlight: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.Headlight);
+                                    Console.WriteLine("{0}: Headlight: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.Headlight ? "On" : "Off");
 
                                 }
 
@@ -158,7 +166,7 @@ namespace SharpBlunamiControl
                                     BlunamiControl.directionButtonPressed = false;
                                     await BlunamiControl.WriteBlunamiDirectionCommand(BlunamiControl.lastUsedEngine);
 
-                                    Console.WriteLine("{0}: Direction: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.Direction);
+                                    Console.WriteLine("{0}: Direction: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.Direction ? "Forward" : "Reverse");
 
                                 }
 
@@ -169,7 +177,7 @@ namespace SharpBlunamiControl
                                     BlunamiControl.boostButtonPressed = false;
                                     await BlunamiControl.WriteBlunamiAGroupEffectCommand(BlunamiControl.lastUsedEngine);
 
-                                    Console.WriteLine("{0}: Brake Selection: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.BrakeSelection);
+                                    Console.WriteLine("{0}: Brake Selection: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.BrakeSelection ? "Train" : "Independent");
 
                                 }
 
@@ -180,31 +188,15 @@ namespace SharpBlunamiControl
                                     BlunamiControl.brakeButtonPressed = false;
                                     await BlunamiControl.WriteBlunamiAGroupEffectCommand(BlunamiControl.lastUsedEngine);
 
-                                    Console.WriteLine("{0}, Brake: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.Brake);
+                                    Console.WriteLine("{0}, Brake: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.Brake ? "On" : "Off");
 
                                 }
 
-                                // Short Whistle Enable/Disable
-                                if (BlunamiControl.num3Pressed)
-                                {
-                                    BlunamiControl.lastUsedEngine.ShortWhistle = !BlunamiControl.lastUsedEngine.ShortWhistle;
-                                    BlunamiControl.num3Pressed = false;
-                                    await BlunamiControl.WriteBlunamiDynamoGroupEffectCommand(BlunamiControl.lastUsedEngine);
+                                
 
-                                    Console.WriteLine("{0}: Short Whistle: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.ShortWhistle);
 
-                                }
 
-                                // Grade Crossing Whistle Enable/Disable
-                                if (BlunamiControl.num2Pressed)
-                                {
-                                    BlunamiControl.lastUsedEngine.GradeCrossingWhistle = !BlunamiControl.lastUsedEngine.GradeCrossingWhistle;
-                                    BlunamiControl.num2Pressed = false;
-                                    await BlunamiControl.WriteBlunamiAGroupEffectCommand(BlunamiControl.lastUsedEngine);
-
-                                    Console.WriteLine("{0}: Grade Crossing Whistle: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.GradeCrossingWhistle);
-
-                                }
+                                
 
 
                             }
@@ -255,6 +247,73 @@ namespace SharpBlunamiControl
             //Application.Run(new Form1());
         }
 
+        async Task KeyPadCommands(int keyPadPage)
+        {
+            switch(keyPadPage)
+            {
+                default:
+                case 0:
+                    {
+                        // Grade Crossing Whistle Enable/Disable
+                        if (num1Pressed)
+                        {
+                            lastUsedEngine.GradeCrossingWhistle = !lastUsedEngine.GradeCrossingWhistle;
+                            num1Pressed = false;
+                            await WriteBlunamiAGroupEffectCommand(lastUsedEngine);
+
+                            Console.WriteLine("{0}: Grade Crossing Whistle: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.GradeCrossingWhistle ? "On" : "Off");
+
+                        }
+
+                        // Grade Crossing Whistle Enable/Disable
+                        if (num2Pressed)
+                        {
+                           lastUsedEngine.GradeCrossingWhistle = !lastUsedEngine.GradeCrossingWhistle;
+                            num2Pressed = false;
+                            await WriteBlunamiAGroupEffectCommand(lastUsedEngine);
+
+                            Console.WriteLine("{0}: Grade Crossing Whistle: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.GradeCrossingWhistle ? "On" : "Off");
+
+                        }
+
+                        // Short Whistle Enable/Disable
+                        if (num3Pressed)
+                        {
+                            lastUsedEngine.ShortWhistle = !lastUsedEngine.ShortWhistle;
+                            num3Pressed = false;
+                            await WriteBlunamiDynamoGroupEffectCommand(lastUsedEngine);
+
+                            Console.WriteLine("{0}: Short Whistle: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.ShortWhistle ? "On" : "Off");
+
+                        }
+
+                        // Cutoff+ Enable/Disable
+                        if (num4Pressed)
+                        {
+                            lastUsedEngine.ShortWhistle = !lastUsedEngine.ShortWhistle;
+                            num4Pressed = false;
+                            await WriteBlunamiDynamoGroupEffectCommand(lastUsedEngine);
+
+                            Console.WriteLine("{0}: Cutoff +: {1}", lastUsedEngine.BluetoothLeDevice.Name, lastUsedEngine.ShortWhistle ? "On" : "Off");
+
+                        }
+
+                    }
+                    break;
+                    
+                case 1:
+                    {
+
+                    }
+                    break;
+                case 2:
+                    {
+
+                    }
+                    break;
+
+            }
+        }
 
     }
 
