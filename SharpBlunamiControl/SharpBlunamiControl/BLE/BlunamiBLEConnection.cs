@@ -34,9 +34,11 @@ namespace SharpBlunamiControl
                     {
                         FoundBluetoothDevices.Add(device);
                         Console.WriteLine("Stored Blunami: " + device.Name);
-                    //    var newSession = await GattSession.FromDeviceIdAsync(device.BluetoothDeviceId);
-                    //newSession.MaintainConnection = true;
-                    //device.ConnectionStatusChanged += ConnectionStatusChangedHandler;
+
+                        // Try forcing the computer to maintain a connection
+                        var newSession = await GattSession.FromDeviceIdAsync(device.BluetoothDeviceId);
+                        newSession.MaintainConnection = true;
+                        device.ConnectionStatusChanged += ConnectionStatusChangedHandler;
                     }
 
                     

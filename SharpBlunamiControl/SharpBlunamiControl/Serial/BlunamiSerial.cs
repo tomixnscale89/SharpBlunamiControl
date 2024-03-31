@@ -228,48 +228,50 @@ namespace SharpBlunamiControl
 
                     var TMCCPacket = DetermineTMCCCommand(buf);
 
-                    if (TMCCPacket.Item2 == 0xFF & TMCCPacket.Item3 == 0xFF)
+                    if(TMCCPacket != null) // Legacy packets crash here, need to properly parse this
                     {
-                        //Console.WriteLine("TMCCPacket.Item2 {0} TMCCPacket.Item3 {1}", TMCCPacket.Item2, TMCCPacket.Item3);
-                        Console.WriteLine("Program now exiting....");
-                        wantsToExit = true; // exit thread
-                    }
-                    else
-                    {
-                        lastFoundTMCCID = TMCCPacket.Item3;
-                        foreach (var blunami in FoundBlunamiDevices)
+                        if (TMCCPacket.Item2 == 0xFF & TMCCPacket.Item3 == 0xFF)
                         {
-                            if (blunami.TMCCID == lastFoundTMCCID)
+                            //Console.WriteLine("TMCCPacket.Item2 {0} TMCCPacket.Item3 {1}", TMCCPacket.Item2, TMCCPacket.Item3);
+                            Console.WriteLine("Program now exiting....");
+                            wantsToExit = true; // exit thread
+                        }
+                        else
+                        {
+                            lastFoundTMCCID = TMCCPacket.Item3;
+                            foreach (var blunami in FoundBlunamiDevices)
                             {
-                                lastUsedEngine = blunami;
-                                switch (TMCCPacket.Item1)
+                                if (blunami.TMCCID == lastFoundTMCCID)
                                 {
-                                    case (int)TMCCCommandType.CT_ACTION:
-                                        {
-                                            SetTMCCActionButtonSates(TMCCPacket.Item2, blunami);
-                                            break;
-                                        }
-                                    case (int)TMCCCommandType.CT_RELATIVE_SPEED:
-                                        {
-                                            SetTMCCSpeedState(TMCCPacket.Item2, blunami);
+                                    lastUsedEngine = blunami;
+                                    switch (TMCCPacket.Item1)
+                                    {
+                                        case (int)TMCCCommandType.CT_ACTION:
+                                            {
+                                                SetTMCCActionButtonSates(TMCCPacket.Item2, blunami);
+                                                break;
+                                            }
+                                        case (int)TMCCCommandType.CT_RELATIVE_SPEED:
+                                            {
+                                                SetTMCCSpeedState(TMCCPacket.Item2, blunami);
 
-                                            break;
-                                        }
-                                    case (int)TMCCCommandType.CT_ABSOLUTE_SPEED:
-                                        {
-                                            break;
-                                        }
-                                    case (int)TMCCCommandType.CT_EXTENDED: // SET Button, Momentum buttons
-                                        {
-                                            SetTMCCExtendedButtonSates(TMCCPacket.Item2, blunami);
-                                            break;
-                                        }
+                                                break;
+                                            }
+                                        case (int)TMCCCommandType.CT_ABSOLUTE_SPEED:
+                                            {
+                                                break;
+                                            }
+                                        case (int)TMCCCommandType.CT_EXTENDED: // SET Button, Momentum buttons
+                                            {
+                                                SetTMCCExtendedButtonSates(TMCCPacket.Item2, blunami);
+                                                break;
+                                            }
+                                    }
+
                                 }
-                                
                             }
                         }
                     }
-                    
                 }
             }
      
