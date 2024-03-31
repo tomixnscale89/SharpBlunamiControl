@@ -136,7 +136,7 @@ namespace SharpBlunamiControl
 
         public async void ReadDecoderType(BlunamiEngine loco)
         {
-            if (loco.BluetoothLeDevice != null)
+            if (loco.BluetoothLeDevice != null && loco.BluetoothLeDevice.ConnectionStatus == BluetoothConnectionStatus.Connected)
             {
                 try
                 {
@@ -175,7 +175,7 @@ namespace SharpBlunamiControl
          async Task<int> ReadCVFromDecoder(BlunamiEngine loco, int cv)
         {
             int cvData = -1;
-            if(loco.BluetoothLeDevice != null)
+            if(loco.BluetoothLeDevice != null && loco.BluetoothLeDevice.ConnectionStatus == BluetoothConnectionStatus.Connected)
             {
                 try
                 {
@@ -195,7 +195,7 @@ namespace SharpBlunamiControl
         async Task WriteDataOnlyToBlunami(BlunamiEngine loco, byte[] data)
         {
             var writer = new DataWriter();
-            if (loco.BluetoothLeDevice != null)
+            if (loco.BluetoothLeDevice != null && loco.BluetoothLeDevice.ConnectionStatus == BluetoothConnectionStatus.Connected)
             {
                 try
                 {
@@ -218,7 +218,7 @@ namespace SharpBlunamiControl
         async Task<int> WriteThenReadDataToBlunami(BlunamiEngine loco, byte[] data)
         {
             int dataFound = -1;
-            if (loco.BluetoothLeDevice != null)
+            if (loco.BluetoothLeDevice != null && loco.BluetoothLeDevice.ConnectionStatus == BluetoothConnectionStatus.Connected)
             {
                 try
                 {
@@ -310,7 +310,7 @@ namespace SharpBlunamiControl
 
         async Task WriteBlunamiDynamoGroupEffectCommand(BlunamiEngine loco)
         {
-            if (loco.BluetoothLeDevice != null)
+            if (loco.BluetoothLeDevice != null && loco.BluetoothLeDevice.ConnectionStatus == BluetoothConnectionStatus.Connected)
             {
                 try
                 {
@@ -407,7 +407,7 @@ namespace SharpBlunamiControl
 
         async Task WriteBlunamiAGroupEffectCommand(BlunamiEngine loco)
         {
-            if (loco.BluetoothLeDevice != null)
+            if (loco.BluetoothLeDevice != null && loco.BluetoothLeDevice.ConnectionStatus == BluetoothConnectionStatus.Connected)
             {
                 try
                 {
@@ -494,7 +494,7 @@ namespace SharpBlunamiControl
 
         async Task WriteBlunamiBGroupEffectCommand(BlunamiEngine loco)
         {
-            if (loco.BluetoothLeDevice != null)
+            if (loco.BluetoothLeDevice != null && loco.BluetoothLeDevice.ConnectionStatus == BluetoothConnectionStatus.Connected)
             {
                 try
                 {
@@ -581,7 +581,7 @@ namespace SharpBlunamiControl
 
         async Task WriteBlunamiDEGroupEffectCommand(BlunamiEngine loco)
         {
-            if (loco.BluetoothLeDevice != null)
+            if (loco.BluetoothLeDevice != null && loco.BluetoothLeDevice.ConnectionStatus == BluetoothConnectionStatus.Connected)
             {
                 try
                 {
@@ -670,7 +670,7 @@ namespace SharpBlunamiControl
 
         async Task WriteBlunamiDFGroupEffectCommand(BlunamiEngine loco)
         {
-            if (loco.BluetoothLeDevice != null)
+            if (loco.BluetoothLeDevice != null && loco.BluetoothLeDevice.ConnectionStatus == BluetoothConnectionStatus.Connected)
             {
                 try
                 {
@@ -757,7 +757,7 @@ namespace SharpBlunamiControl
 
         async Task WriteBlunamiSpeedCommand(BlunamiEngine loco)
         {
-            if (loco.BluetoothLeDevice != null)
+            if (loco.BluetoothLeDevice != null && loco.BluetoothLeDevice.ConnectionStatus == BluetoothConnectionStatus.Connected)
             {
                 try
                 {
@@ -859,7 +859,7 @@ namespace SharpBlunamiControl
 
         async Task WriteBlunamiDirectionCommand(BlunamiEngine loco)
         {
-            if (loco.BluetoothLeDevice != null)
+            if (loco.BluetoothLeDevice != null && loco.BluetoothLeDevice.ConnectionStatus == BluetoothConnectionStatus.Connected)
             {
                 try
                 {

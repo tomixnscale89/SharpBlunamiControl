@@ -19,7 +19,15 @@ namespace SharpBlunamiControl
 
         private async void ConnectionStatusChangedHandler(BluetoothLEDevice bluetoothLeDevice, object o)
         {
-            Console.WriteLine("Connected to: " + bluetoothLeDevice.Name);
+            if(bluetoothLeDevice.ConnectionStatus == BluetoothConnectionStatus.Connected)
+            {
+                Console.WriteLine("Connected to: " + bluetoothLeDevice.Name);
+            }
+            if(bluetoothLeDevice.ConnectionStatus == BluetoothConnectionStatus.Disconnected)
+            {
+                Console.WriteLine("Disconnected from: " + bluetoothLeDevice.Name);
+                bluetoothLeDevice.Dispose();
+            }
         }
 
         async Task CollectAllBLEDeviesAsync(List<BluetoothLEDevice> FoundBluetoothDevices)
