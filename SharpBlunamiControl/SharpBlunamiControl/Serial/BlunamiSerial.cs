@@ -186,8 +186,8 @@ namespace SharpBlunamiControl
         void ConfigureSerialPort()
         {
             serialPort.DataReceived += new SerialDataReceivedEventHandler(SerialPort_DataReceived);
-            serialPort.ReadTimeout = 500;
-            serialPort.ReceivedBytesThreshold = 3;
+            //serialPort.ReadTimeout = 500;
+            //serialPort.ReceivedBytesThreshold = 3;
             serialPort.Open();
         }
 
@@ -233,8 +233,18 @@ namespace SharpBlunamiControl
                         if (TMCCPacket.Item2 == 0xFF & TMCCPacket.Item3 == 0xFF)
                         {
                             //Console.WriteLine("TMCCPacket.Item2 {0} TMCCPacket.Item3 {1}", TMCCPacket.Item2, TMCCPacket.Item3);
-                            Console.WriteLine("Program now exiting....");
-                            wantsToExit = true; // exit thread
+                            Console.WriteLine("Stopping all Blunami trains....");
+                            foreach(var blunami in FoundBlunamiDevices)
+                            {
+                                Console.WriteLine("Stopping: {0}....",blunami.BluetoothLeDevice.Name);
+
+                                SetTMCCAbsoluteSpeedState(0, blunami);
+                                //Console.Write("done.");
+
+
+                            }
+                            Console.Write("done stopping trains.");
+
                         }
                         else
                         {
@@ -259,6 +269,8 @@ namespace SharpBlunamiControl
                                             }
                                         case (int)TMCCCommandType.CT_ABSOLUTE_SPEED:
                                             {
+                                                SetTMCCAbsoluteSpeedState(TMCCPacket.Item2, blunami);
+
                                                 break;
                                             }
                                         case (int)TMCCCommandType.CT_EXTENDED: // SET Button, Momentum buttons
@@ -277,34 +289,9 @@ namespace SharpBlunamiControl
      
             catch (TimeoutException)
             {
-                Console.WriteLine("Serial COM Timeout");
+                Console.WriteLine("Serial COM Timeout, too much data received. Please exit application.");
             }
             
-        }
-
-        void TestStates(int dataid)
-        {
-            switch (dataid)
-            {
-                case (int)EngineCommandParams.EC_BLOW_HORN_1:
-                case (int)EngineCommandParams.EC_BLOW_HORN_2:
-                    {
-                        whistleButtonPressed = true;
-                        lastPressTime = timer;
-                        if (debugString)
-                            Console.WriteLine("Horn pressed");
-                        break;
-                    }
-
-                case (int)EngineCommandParams.EC_RING_BELL:
-                    {
-                        bellButtonPressed = true;
-                        lastPressTime = timer;
-                        if (debugString)
-                            Console.WriteLine("Bell pressed\n");
-                        break;
-                    }
-            }
         }
 
         void SetTMCCSpeedState(int dataid, BlunamiEngine loco)
@@ -358,6 +345,25 @@ namespace SharpBlunamiControl
                 Console.WriteLine("{0}: Speed: {1}", loco.BluetoothLeDevice.Name, loco.Speed);
         }
 
+        void SetTMCCAbsoluteSpeedState(int dataid, BlunamiEngine loco)
+        {
+
+            // Data id here should be the speed from 0 to 31. Let's map the speed steps. It won't be great, but it is something.
+
+            if (dataid == 0)
+                loco.Speed = 0;
+            else
+                loco.Speed = ((126 / 31) * dataid);
+
+            if (loco.Speed > 126)
+                loco.Speed = 126;
+
+            WriteBlunamiSpeedCommand(loco);
+                            
+            if (showDialogueText)
+                Console.WriteLine("{0}: Absolute Speed: {1}", loco.BluetoothLeDevice.Name, loco.Speed);
+        }
+
         void SetTMCCActionButtonSates(int dataid, BlunamiEngine loco)
         {
             switch (dataid)
@@ -371,7 +377,8 @@ namespace SharpBlunamiControl
                         whistleButtonPressed = true;
                         Task.Run(async () =>
                         {
-                            await WriteBlunamiDynamoGroupEffectCommand(loco);
+                            await WriteBlunamiDynamoGroupEffectCommand(loco).ConfigureAwait(false);
+                            Console.WriteLine("{0}: Whistle: {1}", loco.BluetoothLeDevice.Name, loco.Whistle ? "On" : "Off");
 
                         }).GetAwaiter().GetResult();
                         if (debugString)
@@ -389,7 +396,7 @@ namespace SharpBlunamiControl
 
                 case (int)EngineCommandParams.EC_TOGGLE_DIRECTION:
                     {
-                        directionButtonPressed = true;
+                        directionButtonPressed = true;                                               
                         if (debugString)
                             Console.WriteLine("Toggle direction pressed\n");
                         break;

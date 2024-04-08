@@ -39,6 +39,16 @@ namespace SharpBlunamiControl
 
 
             Console.WriteLine("Welcome to SharpBlunamiControl.");
+
+
+            /*
+             
+            Add BLE Radio Checking Here 
+
+             */
+
+
+
             Console.WriteLine("Please connect your DB9 Cable into a SER2, BASE1, BASE1L, BASE 2, or BASE3.");
             Console.WriteLine("");
 
@@ -106,7 +116,7 @@ namespace SharpBlunamiControl
                     BlunamiControl.stopWatch.Start();
                     Console.WriteLine("");
 
-                    Console.WriteLine("When you are finished, press the HALT button to shut down the application.");
+                    Console.WriteLine("When you are finished, type Q to shut down the application.");
                     Console.WriteLine("To control your trains, please use the number AFTER the name of your Blunami decoder above.");
                 }
                 else
@@ -115,6 +125,14 @@ namespace SharpBlunamiControl
                     Console.WriteLine("Found no devices. Exiting....");
 
                 }
+
+
+                // https://stackoverflow.com/questions/3382409/console-readkey-async-or-callback
+                Task.Factory.StartNew(() =>
+                {
+                    while (Console.ReadKey().Key != ConsoleKey.Q) ;
+                    BlunamiControl.wantsToExit = true;
+                });
 
                 while (!BlunamiControl.wantsToExit)
                 {
@@ -130,19 +148,19 @@ namespace SharpBlunamiControl
                                 // Normal Whistle Enable/Disable
                                 if (BlunamiControl.lastUsedEngine.Whistle)
                                 {
-                                    Console.WriteLine("{0}: Whistle", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.Whistle);
                                     BlunamiControl.lastUsedEngine.Whistle = false;
                                     BlunamiControl.whistleButtonPressed = false;
+                                    await BlunamiControl.WriteBlunamiDynamoGroupEffectCommand(BlunamiControl.lastUsedEngine).ConfigureAwait(false);
+                                    Console.WriteLine("{0}: Whistle: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.Whistle ? "On" : "Off");
 
-                                    await BlunamiControl.WriteBlunamiDynamoGroupEffectCommand(BlunamiControl.lastUsedEngine);
                                 }
 
                                 // Bell Enable/Disable
                                 if (BlunamiControl.bellButtonPressed)
                                 {
                                     BlunamiControl.lastUsedEngine.Bell = !BlunamiControl.lastUsedEngine.Bell;
-                                    await BlunamiControl.WriteBlunamiDynamoGroupEffectCommand(BlunamiControl.lastUsedEngine);
-                                    Console.WriteLine("{0}: Bell: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.Bell);
+                                    await BlunamiControl.WriteBlunamiDynamoGroupEffectCommand(BlunamiControl.lastUsedEngine).ConfigureAwait(false);
+                                    Console.WriteLine("{0}: Bell: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.Bell ? "On" : "Off");
                                     BlunamiControl.bellButtonPressed = false;
                                 }
 
@@ -153,7 +171,7 @@ namespace SharpBlunamiControl
                                     BlunamiControl.headlightButtonPressed = false;
 
                                     BlunamiControl.lastUsedEngine.Headlight = !BlunamiControl.lastUsedEngine.Headlight;
-                                    await BlunamiControl.WriteBlunamiDynamoGroupEffectCommand(BlunamiControl.lastUsedEngine);
+                                    await BlunamiControl.WriteBlunamiDynamoGroupEffectCommand(BlunamiControl.lastUsedEngine).ConfigureAwait(false);
                                     Console.WriteLine("{0}: Headlight: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.Headlight ? "On" : "Off");
 
                                 }
@@ -164,7 +182,7 @@ namespace SharpBlunamiControl
                                 {
                                     BlunamiControl.lastUsedEngine.Direction = !BlunamiControl.lastUsedEngine.Direction;
                                     BlunamiControl.directionButtonPressed = false;
-                                    await BlunamiControl.WriteBlunamiDirectionCommand(BlunamiControl.lastUsedEngine);
+                                    await BlunamiControl.WriteBlunamiDirectionCommand(BlunamiControl.lastUsedEngine).ConfigureAwait(false);
 
                                     Console.WriteLine("{0}: Direction: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.Direction ? "Forward" : "Reverse");
 
@@ -175,7 +193,7 @@ namespace SharpBlunamiControl
                                 {
                                     BlunamiControl.lastUsedEngine.BrakeSelection = !BlunamiControl.lastUsedEngine.BrakeSelection;
                                     BlunamiControl.boostButtonPressed = false;
-                                    await BlunamiControl.WriteBlunamiAGroupEffectCommand(BlunamiControl.lastUsedEngine);
+                                    await BlunamiControl.WriteBlunamiAGroupEffectCommand(BlunamiControl.lastUsedEngine).ConfigureAwait(false);
 
                                     Console.WriteLine("{0}: Brake Selection: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.BrakeSelection ? "Train" : "Independent");
 
@@ -186,7 +204,7 @@ namespace SharpBlunamiControl
                                 {
                                     BlunamiControl.lastUsedEngine.Brake = !BlunamiControl.lastUsedEngine.Brake;
                                     BlunamiControl.brakeButtonPressed = false;
-                                    await BlunamiControl.WriteBlunamiAGroupEffectCommand(BlunamiControl.lastUsedEngine);
+                                    await BlunamiControl.WriteBlunamiAGroupEffectCommand(BlunamiControl.lastUsedEngine).ConfigureAwait(false);
 
                                     Console.WriteLine("{0}, Brake: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.Brake ? "On" : "Off");
 
@@ -197,7 +215,7 @@ namespace SharpBlunamiControl
                                 {
                                     BlunamiControl.lastUsedEngine.FX3 = !BlunamiControl.lastUsedEngine.FX3;
                                     BlunamiControl.frontCouplerButtonPressed = false;
-                                    await BlunamiControl.WriteBlunamiDFGroupEffectCommand(BlunamiControl.lastUsedEngine);
+                                    await BlunamiControl.WriteBlunamiDFGroupEffectCommand(BlunamiControl.lastUsedEngine).ConfigureAwait(false);
 
                                     Console.WriteLine("{0}: FX3: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.FX3 ? "On" : "Off");
 
@@ -208,14 +226,14 @@ namespace SharpBlunamiControl
                                 {
                                     BlunamiControl.lastUsedEngine.FX4 = !BlunamiControl.lastUsedEngine.FX4;
                                     BlunamiControl.rearCouplerButtonPressed = false;
-                                    await BlunamiControl.WriteBlunamiDFGroupEffectCommand(BlunamiControl.lastUsedEngine);
+                                    await BlunamiControl.WriteBlunamiDFGroupEffectCommand(BlunamiControl.lastUsedEngine).ConfigureAwait(false);
 
                                     Console.WriteLine("{0}: FX4: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.FX4 ? "On" : "Off");
 
                                 }
 
 
-                                await BlunamiControl.KeyPadCommands(BlunamiControl.keyPadCVPage);
+                                await BlunamiControl.KeyPadCommands(BlunamiControl.keyPadCVPage).ConfigureAwait(false);
 
                                 // Set Button
                                 if (BlunamiControl.setButtonPressed)

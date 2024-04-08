@@ -310,6 +310,7 @@ namespace SharpBlunamiControl
 
         async Task WriteBlunamiDynamoGroupEffectCommand(BlunamiEngine loco)
         {
+
             if (loco.BluetoothLeDevice != null && loco.BluetoothLeDevice.ConnectionStatus == BluetoothConnectionStatus.Connected)
             {
                 try
@@ -387,7 +388,12 @@ namespace SharpBlunamiControl
                         GattWriteResult result = await loco.BlunamiCharactertisic.WriteValueWithResultAsync(writer.DetachBuffer());
                         if (result.Status == GattCommunicationStatus.Success)
                         {
-                            //Console.WriteLine("Successfully wrote DynamoEffectPacket to train");
+                            if(debugString)
+                                Console.WriteLine("Successfully wrote DynamoEffectPacket to {0}",loco.BluetoothLeDevice.Name);
+                        }
+                        else
+                        {
+                            Console.WriteLine("WriteBlunamiDynamoGroupEffectCommand: Error Writing to Blunami Characteristic:{0}", result.Status.ToString());
                         }
                     }
                     else
@@ -476,6 +482,10 @@ namespace SharpBlunamiControl
                         {
                             //Console.WriteLine("Successfully wrote AEffectPacket to train");
                         }
+                        else
+                        {
+                            Console.WriteLine("WriteBlunamiAGroupEffectCommand: Error Writing to Blunami Characteristic:{0}", result.Status.ToString());
+                        }
                     }
                     else
                     {
@@ -562,6 +572,10 @@ namespace SharpBlunamiControl
                         if (result.Status == GattCommunicationStatus.Success)
                         {
                             //Console.WriteLine("Successfully wrote AEffectPacket to train");
+                        }
+                        else
+                        {
+                            Console.WriteLine("WriteBlunamiBGroupEffectCommand: Error Writing to Blunami Characteristic:{0}", result.Status.ToString());
                         }
                     }
                     else
@@ -652,6 +666,10 @@ namespace SharpBlunamiControl
                         {
                             //Console.WriteLine("Successfully wrote AEffectPacket to train");
                         }
+                        else
+                        {
+                            Console.WriteLine("WriteBlunamiDEGroupEffectCommand: Error Writing to Blunami Characteristic:{0}", result.Status.ToString());
+                        }
                     }
                     else
                     {
@@ -738,6 +756,10 @@ namespace SharpBlunamiControl
                         if (result.Status == GattCommunicationStatus.Success)
                         {
                             //Console.WriteLine("Successfully wrote AEffectPacket to train");
+                        }
+                        else
+                        {
+                            Console.WriteLine("WriteBlunamiDFGroupEffectCommand: Error Writing to Blunami Characteristic:{0}", result.Status.ToString());
                         }
                     }
                     else
@@ -841,6 +863,10 @@ namespace SharpBlunamiControl
                         {
                             //Console.WriteLine("Successfully wrote SpeedPacket to train");
                         }
+                        else
+                        {
+                            Console.WriteLine("WriteBlunamiSpeedCommand: Error Writing to Blunami Characteristic:{0}", result.Status.ToString());
+                        }
                     }
                     else
                     {
@@ -941,6 +967,10 @@ namespace SharpBlunamiControl
                         if (result.Status == GattCommunicationStatus.Success)
                         {
                             //Console.WriteLine("Successfully wrote DirectionPacket to train");
+                        }
+                        else
+                        {
+                            Console.WriteLine("WriteBlunamiDirectionCommand: Error Writing to Blunami Characteristic:{0}", result.Status.ToString());
                         }
                     }
                     else

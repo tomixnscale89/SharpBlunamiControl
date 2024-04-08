@@ -37,15 +37,15 @@ namespace SharpBlunamiControl
             // Please adjust these values if you cannot receive any advertisement 
             // Set the in-range threshold to -70dBm. This means advertisements with RSSI >= -70dBm 
             // will start to be considered "in-range".
-            watcher.SignalStrengthFilter.InRangeThresholdInDBm = -75;
+            watcher.SignalStrengthFilter.InRangeThresholdInDBm = 127;
 
             // Set the out-of-range threshold to -75dBm (give some buffer). Used in conjunction with OutOfRangeTimeout
             // to determine when an advertisement is no longer considered "in-range"
-            watcher.SignalStrengthFilter.OutOfRangeThresholdInDBm = -80;
+            watcher.SignalStrengthFilter.OutOfRangeThresholdInDBm = -127;
 
-            // Set the out-of-range timeout to be 2 seconds. Used in conjunction with OutOfRangeThresholdInDBm
+            // Set the out-of-range timeout to be 10 seconds. Used in conjunction with OutOfRangeThresholdInDBm
             // to determine when an advertisement is no longer considered "in-range"
-            watcher.SignalStrengthFilter.OutOfRangeTimeout = TimeSpan.FromMilliseconds(2000);
+            watcher.SignalStrengthFilter.OutOfRangeTimeout = TimeSpan.FromMilliseconds(10000);
 
             // By default, the sampling interval is set to zero, which means there is no sampling and all
             // the advertisement received is returned in the Received event
@@ -83,25 +83,25 @@ namespace SharpBlunamiControl
 
             // Check if there are any manufacturer-specific sections.
             // If there is, print the raw data of the first manufacturer section (if there are multiple).
-            string manufacturerDataString = "";
-            var manufacturerSections = eventArgs.Advertisement.ManufacturerData;
-            if (manufacturerSections.Count > 0)
-            {
-                // Only print the first one of the list
-                var manufacturerData = manufacturerSections[0];
-                var data = new byte[manufacturerData.Data.Length];
-                using (var reader = DataReader.FromBuffer(manufacturerData.Data))
-                {
-                    reader.ReadBytes(data);
-                }
-                // Print the company ID + the raw data in hex format
-                manufacturerDataString = string.Format("0x{0}: {1}",
-                    manufacturerData.CompanyId.ToString("X"),
-                    BitConverter.ToString(data));
-            }
+            //string manufacturerDataString = "";
+            //var manufacturerSections = eventArgs.Advertisement.ManufacturerData;
+            //if (manufacturerSections.Count > 0)
+            //{
+            //    // Only print the first one of the list
+            //    var manufacturerData = manufacturerSections[0];
+            //    var data = new byte[manufacturerData.Data.Length];
+            //    using (var reader = DataReader.FromBuffer(manufacturerData.Data))
+            //    {
+            //        reader.ReadBytes(data);
+            //    }
+            //    // Print the company ID + the raw data in hex format
+            //    manufacturerDataString = string.Format("0x{0}: {1}",
+            //        manufacturerData.CompanyId.ToString("X"),
+            //        BitConverter.ToString(data));
+            //}
 
             var servicesFound = eventArgs.Advertisement.ServiceUuids;
-            var dataSections = eventArgs.Advertisement.DataSections;
+            //var dataSections = eventArgs.Advertisement.DataSections;
 
             foreach (var service in servicesFound)
             {
@@ -109,8 +109,9 @@ namespace SharpBlunamiControl
 
                 if (service.ToString() == BlunamiCommandBase.blunamiServiceStr)
                 {
-                    Console.WriteLine("Found a Blunami Device with address: {0}", addressStr);
+                    Console.WriteLine("Found a Blunami Device with address: {0},{1}", addressStr, rssi);
                     addressFromScanResponse = address;
+                    //Console.WriteLine("Signal strength: {0}", rssi);
 
                 }
             }

@@ -30,6 +30,89 @@ namespace SharpBlunamiControl
             }
         }
 
+        /// <summary>
+        /// https://github.com/microsoft/Windows-universal-samples/blob/main/Samples/DeviceEnumerationAndPairing/cs/Scenario9_CustomPairDevice.xaml.cs
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        private void PairingRequestedHandler(
+            DeviceInformationCustomPairing sender,
+            DevicePairingRequestedEventArgs args)
+        {
+            switch (args.PairingKind)
+            {
+                case DevicePairingKinds.ConfirmOnly:
+                    // Windows itself will pop the confirmation dialog as part of "consent" if this is running on Desktop or Mobile
+                    // If this is an App for 'Windows IoT Core' where there is no Windows Consent UX, you may want to provide your own confirmation.
+                    args.Accept();
+                    break;
+
+                //case DevicePairingKinds.DisplayPin:
+                //    // We just show the PIN on this side. The ceremony is actually completed when the user enters the PIN
+                //    // on the target device. We automatically accept here since we can't really "cancel" the operation
+                //    // from this side.
+                //    args.Accept();
+
+                //    // No need for a deferral since we don't need any decision from the user
+                //    await rootPage.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                //    {
+                //        ShowPairingPanel(
+                //            "Please enter this PIN on the device you are pairing with: " + args.Pin,
+                //            args.PairingKind);
+
+                //    });
+                //    break;
+
+                //case DevicePairingKinds.ProvidePin:
+                //    // A PIN may be shown on the target device and the user needs to enter the matching PIN on
+                //    // this Windows device. Get a deferral so we can perform the async request to the user.
+                //    var collectPinDeferral = args.GetDeferral();
+
+                //    await rootPage.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+                //    {
+                //        string pin = await GetPinFromUserAsync();
+                //        if (!string.IsNullOrEmpty(pin))
+                //        {
+                //            args.Accept(pin);
+                //        }
+
+                //        collectPinDeferral.Complete();
+                //    });
+                //    break;
+
+                //case DevicePairingKinds.ProvidePasswordCredential:
+                //    var collectCredentialDeferral = args.GetDeferral();
+                //    await rootPage.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+                //    {
+                //        var credential = await GetPasswordCredentialFromUserAsync();
+                //        if (credential != null)
+                //        {
+                //            args.AcceptWithPasswordCredential(credential);
+                //        }
+                //        collectCredentialDeferral.Complete();
+                //    });
+                //    break;
+
+                //case DevicePairingKinds.ConfirmPinMatch:
+                //    // We show the PIN here and the user responds with whether the PIN matches what they see
+                //    // on the target device. Response comes back and we set it on the PinComparePairingRequestedData
+                //    // then complete the deferral.
+                //    var displayMessageDeferral = args.GetDeferral();
+
+                //    await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
+                //    {
+                //        bool accept = await GetUserConfirmationAsync(args.Pin);
+                //        if (accept)
+                //        {
+                //            args.Accept();
+                //        }
+
+                //        displayMessageDeferral.Complete();
+                //    });
+                //    break;
+            }
+        }
+
         async Task CollectAllBLEDeviesAsync(List<BluetoothLEDevice> FoundBluetoothDevices)
         {
 
@@ -41,12 +124,38 @@ namespace SharpBlunamiControl
                     if (!FoundBluetoothDevices.Contains(device))
                     {
                         FoundBluetoothDevices.Add(device);
-                        Console.WriteLine("Stored Blunami: " + device.Name);
+                        Console.WriteLine("Stored {0} to list... ",device.Name);
 
                         // Try forcing the computer to maintain a connection
+                        Console.Write("Setting MaintainConnection {0}...",device.Name);
+
                         var newSession = await GattSession.FromDeviceIdAsync(device.BluetoothDeviceId);
                         newSession.MaintainConnection = true;
+                        Console.WriteLine("done...", device.Name);
+
                         device.ConnectionStatusChanged += ConnectionStatusChangedHandler;
+
+
+                        // Try some custom pairing stuff to see if this helps with disconnections.
+                        // https://github.com/microsoft/Windows-universal-samples/blob/main/Samples/DeviceEnumerationAndPairing/cs/Scenario9_CustomPairDevice.xaml.cs
+
+                        // Get ceremony type and protection level selections
+                        // You must select at least ConfirmOnly or the pairing attempt will fail
+                        DevicePairingKinds ceremonySelected = DevicePairingKinds.ConfirmOnly;
+
+                        //  Workaround remote devices losing pairing information
+                        DevicePairingProtectionLevel protectionLevel = DevicePairingProtectionLevel.None;
+
+                        
+                        DeviceInformationCustomPairing customPairing = device.DeviceInformation.Pairing.Custom;
+
+                        // Declare an event handler - you don't need to do much in PairingRequestedHandler since the ceremony is "None"
+                        customPairing.PairingRequested += PairingRequestedHandler;
+                        Console.WriteLine("Setting Custom pairing settings: {0}...", device.Name);
+
+                        DevicePairingResult result = await customPairing.PairAsync(ceremonySelected, protectionLevel);
+                        Console.WriteLine("Pairing Settings for {0}: {1}, Protection:", device.Name,result.Status.ToString(), result.ProtectionLevelUsed.ToString());
+
                     }
 
                     
@@ -81,36 +190,53 @@ namespace SharpBlunamiControl
         {
             GattDeviceServicesResult result = await device.GetGattServicesAsync();
             GattCharacteristic dccCharacteristic = null;
-            if (result.Status == GattCommunicationStatus.Success)
+            try
             {
-                var services = result.Services;
-                foreach (var service in services)
+                if (result.Status == GattCommunicationStatus.Success)
                 {
-                    if (service.Uuid.ToString() == BlunamiCommandBase.blunamiServiceStr)
+                    var services = result.Services;
+                    foreach (var service in services)
                     {
-                        //Console.WriteLine(service.Uuid.ToString());
-                        GattCharacteristicsResult characteristicResult = await service.GetCharacteristicsAsync();
-
-                        if (result.Status == GattCommunicationStatus.Success)
+                        if (service.Uuid.ToString() == BlunamiCommandBase.blunamiServiceStr)
                         {
-                            var characteristics = characteristicResult.Characteristics;
+                            //Console.WriteLine(service.Uuid.ToString());
+                            GattCharacteristicsResult characteristicResult = await service.GetCharacteristicsAsync();
 
-                            foreach (var characteristic in characteristics)
+                            if (result.Status == GattCommunicationStatus.Success)
                             {
-                                if (characteristic.Uuid.ToString() == BlunamiCommandBase.blunamiDCCCharacteristicStr)
+                                var characteristics = characteristicResult.Characteristics;
+
+                                foreach (var characteristic in characteristics)
                                 {
-                                    //Console.WriteLine(characteristic.Uuid.ToString());
-                                    dccCharacteristic = characteristic;
+                                    if (characteristic.Uuid.ToString() == BlunamiCommandBase.blunamiDCCCharacteristicStr)
+                                    {
+                                        //Console.WriteLine(characteristic.Uuid.ToString());
+                                        dccCharacteristic = characteristic;
+                                    }
                                 }
+                            }
+                            else
+                            {
+                                Console.WriteLine("GetBlunamiDCCCharacteristic: Error Reading Blunami Characteristic:{0}", result.Status.ToString());
                             }
                         }
                     }
                 }
+                else
+                {
+                    Console.WriteLine("GetBlunamiDCCCharacteristic: Error Writing to Blunami Characteristic:{0}", result.Status.ToString());
+                }
+                if (dccCharacteristic == null)
+                {
+                    Console.WriteLine("GetBlunamiDCCCharacteristic: An error occured. Could not find Blunami Characteristic in BLE services list.");
+                }
             }
-            if (dccCharacteristic == null)
+            catch(System.ObjectDisposedException)
             {
-                Console.WriteLine("An error occured. Could not find Blunami Characteristic in BLE services list.");
+                Console.WriteLine("System.ObjectDisposedException on: {0}, {1}", device.Name, device.ConnectionStatus);
             }
+            
+            
             return dccCharacteristic;
         }
 
@@ -148,6 +274,14 @@ namespace SharpBlunamiControl
                                 //Console.WriteLine(PrintDecoderName(DecoderType));
                                 // Utilize the data as needed
                             }
+                            else
+                            {
+                                Console.WriteLine("ReadShortDecoderAddress: Error Reading Blunami Characteristic:{0}", result.Status.ToString());
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("ReadShortDecoderAddress: Error Writing to Blunami Characteristic:{0}", result.Status.ToString());
                         }
                     }
                     else
@@ -335,6 +469,14 @@ namespace SharpBlunamiControl
                                 DecoderType = input[5];
                                 // Utilize the data as needed
                             }
+                            else
+                            {
+                                Console.WriteLine("Error Reading from Blunami Characteristic:{0}", result.Status.ToString());
+                            }
+                        }
+                        else
+                        {
+                            Console.WriteLine("Error Writing to Blunami Characteristic:{0}", result.Status.ToString());
                         }
                     }
                     else
