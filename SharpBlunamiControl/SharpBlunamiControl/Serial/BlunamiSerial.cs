@@ -186,8 +186,8 @@ namespace SharpBlunamiControl
         void ConfigureSerialPort()
         {
             serialPort.DataReceived += new SerialDataReceivedEventHandler(SerialPort_DataReceived);
-            //serialPort.ReadTimeout = 500;
-            //serialPort.ReceivedBytesThreshold = 3;
+            serialPort.ReadTimeout = 100;
+            serialPort.ReceivedBytesThreshold = 3;
             serialPort.Open();
         }
 
@@ -375,12 +375,12 @@ namespace SharpBlunamiControl
 
                         loco.Whistle = true;
                         whistleButtonPressed = true;
-                        Task.Run(async () =>
-                        {
-                            await WriteBlunamiDynamoGroupEffectCommand(loco).ConfigureAwait(false);
-                            Console.WriteLine("{0}: Whistle: {1}", loco.BluetoothLeDevice.Name, loco.Whistle ? "On" : "Off");
+                        //Task.Run(async () =>
+                        //{
+                        //    await WriteBlunamiDynamoGroupEffectCommand(loco).ConfigureAwait(false);
+                        //    Console.WriteLine("{0}: Whistle: {1}", loco.BluetoothLeDevice.Name, loco.Whistle ? "On" : "Off");
 
-                        }).GetAwaiter().GetResult();
+                        //}).GetAwaiter().GetResult();
                         if (debugString)
                             Console.WriteLine("Horn pressed");
                         break;

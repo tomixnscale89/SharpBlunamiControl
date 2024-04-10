@@ -10,7 +10,6 @@ using System.IO.Ports;
 using Windows.Devices.Bluetooth.GenericAttributeProfile;
 using SharpBlunamiControl.GUI;
 using System.Windows.Forms;
-using System.Threading.Tasks;
 using System.Timers;
 using System.Diagnostics;
 
@@ -140,6 +139,12 @@ namespace SharpBlunamiControl
 
                     Task.Run(async () =>
                     {
+                        if(BlunamiControl.lastUsedEngine != null && BlunamiControl.lastUsedEngine.Whistle)
+                        {
+                            await BlunamiControl.WriteBlunamiDynamoGroupEffectCommand(BlunamiControl.lastUsedEngine).ConfigureAwait(false);
+                            Console.WriteLine("{0}: Whistle: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.Whistle ? "On" : "Off");
+
+                        }
                         //Console.WriteLine(BlunamiControl.stopWatch.Elapsed.TotalMilliseconds - BlunamiControl.lastPressTime);
                         if (BlunamiControl.stopWatch.Elapsed.TotalMilliseconds - BlunamiControl.lastPressTime >= BlunamiControl.buttonHoldInterval)
                         {
