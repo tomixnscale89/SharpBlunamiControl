@@ -11,10 +11,10 @@ using Windows.Storage.Streams;
 
 namespace SharpBlunamiControl
 {
-    internal partial class BlunamiControl
+    public partial class BlunamiControl
     {
         static DeviceInformation information = null;
-        List<BluetoothLEDevice> FoundBluetoothDevices = new List<BluetoothLEDevice> { };
+        public List<BluetoothLEDevice> FoundBluetoothDevices = new List<BluetoothLEDevice> { };
 
 
         private async void ConnectionStatusChangedHandler(BluetoothLEDevice bluetoothLeDevice, object o)
@@ -113,7 +113,7 @@ namespace SharpBlunamiControl
             }
         }
 
-        async Task CollectAllBLEDeviesAsync(List<BluetoothLEDevice> FoundBluetoothDevices)
+        public async Task CollectAllBLEDeviesAsync(List<BluetoothLEDevice> FoundBluetoothDevices)
         {
 
             foreach (ulong address in BluetoothDeviceAddresses)

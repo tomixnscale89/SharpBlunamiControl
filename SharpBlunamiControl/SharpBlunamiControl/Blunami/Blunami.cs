@@ -100,7 +100,7 @@ enum BlunamiEngineTypes
 
 namespace SharpBlunamiControl
 {
-    internal partial class BlunamiControl
+    public partial class BlunamiControl
     {
         
 

@@ -12,7 +12,7 @@ using System.Diagnostics;
 
 namespace SharpBlunamiControl
 {
-    internal partial class BlunamiControl
+    public partial class BlunamiControl
     {
 
         // ============================================================================

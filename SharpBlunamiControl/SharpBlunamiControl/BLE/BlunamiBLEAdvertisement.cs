@@ -10,9 +10,9 @@ using Windows.Storage.Streams;
 
 namespace SharpBlunamiControl
 {
-    internal partial class BlunamiControl
+    public partial class BlunamiControl
     {
-        List<ulong> BluetoothDeviceAddresses = new List<ulong> { };
+        public List<ulong> BluetoothDeviceAddresses = new List<ulong> { };
         List<string> FoundBluetoothDevicesNames = new List<string> { };
 
         ulong addressFromScanResponse;

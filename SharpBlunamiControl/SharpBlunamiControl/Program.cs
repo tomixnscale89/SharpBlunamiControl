@@ -16,7 +16,7 @@ using System.Diagnostics;
 namespace SharpBlunamiControl
 {
 
-    internal partial class BlunamiControl
+    public partial class BlunamiControl
     {
         BluetoothLEAdvertisementWatcher watcher;
         List<BlunamiEngine> FoundBlunamiDevices = new List<BlunamiEngine> { };

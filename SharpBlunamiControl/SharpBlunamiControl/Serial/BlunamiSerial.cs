@@ -11,7 +11,7 @@ using System.IO.Ports;
 namespace SharpBlunamiControl
 {
 
-    internal partial class BlunamiControl
+    public partial class BlunamiControl
     {
         private enum TMCCCommandType
         {
