@@ -193,6 +193,28 @@ namespace SharpBlunamiControl
 
                                 }
 
+                                // Force Forward Direction Enable/Disable
+                                if (BlunamiControl.forwardForceCommandReceived)
+                                {
+                                    BlunamiControl.lastUsedEngine.Direction = true;
+                                    BlunamiControl.forwardForceCommandReceived = false;
+                                    await BlunamiControl.WriteBlunamiDirectionCommand(BlunamiControl.lastUsedEngine).ConfigureAwait(false);
+
+                                    Console.WriteLine("{0}: Direction: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.Direction ? "Forward" : "Reverse");
+
+                                }
+
+                                // Force Reverse Direction Enable/Disable
+                                if (BlunamiControl.reverseForceCommandReceived)
+                                {
+                                    BlunamiControl.lastUsedEngine.Direction = false;
+                                    BlunamiControl.reverseForceCommandReceived = false;
+                                    await BlunamiControl.WriteBlunamiDirectionCommand(BlunamiControl.lastUsedEngine).ConfigureAwait(false);
+
+                                    Console.WriteLine("{0}: Direction: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.Direction ? "Forward" : "Reverse");
+
+                                }
+
                                 // Brake Selection 
                                 if (BlunamiControl.boostButtonPressed)
                                 {
@@ -234,6 +256,17 @@ namespace SharpBlunamiControl
                                     await BlunamiControl.WriteBlunamiDFGroupEffectCommand(BlunamiControl.lastUsedEngine).ConfigureAwait(false);
 
                                     Console.WriteLine("{0}: FX4: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.FX4 ? "On" : "Off");
+
+                                }
+
+                                // Let off command - Barely anything uses this (if anything)
+                                if (BlunamiControl.letOffCommandReceived)
+                                {
+                                    BlunamiControl.letOffCommandReceived = false;
+                                    BlunamiControl.lastUsedEngine.Blowdown = !BlunamiControl.lastUsedEngine.Blowdown;
+                                    await BlunamiControl.WriteBlunamiAGroupEffectCommand(BlunamiControl.lastUsedEngine).ConfigureAwait(false);
+
+                                    Console.WriteLine("{0}: Blowdown/StraightToEight: {1}", BlunamiControl.lastUsedEngine.BluetoothLeDevice.Name, BlunamiControl.lastUsedEngine.Blowdown ? "On" : "Off");
 
                                 }
 

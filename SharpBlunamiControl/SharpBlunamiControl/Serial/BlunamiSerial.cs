@@ -86,6 +86,11 @@ namespace SharpBlunamiControl
         bool boostButtonPressed = false;
         bool brakeButtonPressed = false;
         bool directionButtonPressed = false;
+
+        bool forwardForceCommandReceived = false;
+        bool reverseForceCommandReceived = false;
+        bool letOffCommandReceived = false;
+
         bool setButtonPressed = false;
         bool lowMomentumPressed,medMomentumPressed,highMomentumPressed = false;
 
@@ -402,6 +407,22 @@ namespace SharpBlunamiControl
                         break;
                     }
 
+                case (int)EngineCommandParams.EC_FORWARD_DIRECTION:
+                    {
+                        forwardForceCommandReceived = true;
+                        if (debugString)
+                            Console.WriteLine("Force Forward Command\n");
+                        break;
+                    }
+
+                case (int)EngineCommandParams.EC_REVERSE_DIRECTION:
+                    {
+                        reverseForceCommandReceived = true;
+                        if (debugString)
+                            Console.WriteLine("Force Reverse Command\n");
+                        break;
+                    }
+
                 case (int)EngineCommandParams.EC_AUX_1_OPTION_1:
                     {
                         shortWhistleButtonPressed = true;
@@ -447,6 +468,24 @@ namespace SharpBlunamiControl
                         brakeButtonPressed = true;
                         if (debugString)
                             Console.WriteLine("Brake pressed\n");
+                        break;
+                    }
+
+                case (int)EngineCommandParams.EC_LET_OFF_SOUND:
+                    {
+                        letOffCommandReceived = true;
+                        if (debugString)
+                            Console.WriteLine("Let off command\n");
+                        break;
+                    }
+
+                case (int)EngineCommandParams.EC_AUX_1_OFF:
+                case (int)EngineCommandParams.EC_AUX_1_ON:
+                case (int)EngineCommandParams.EC_AUX_2_ON:
+                case (int)EngineCommandParams.EC_AUX_2_OFF:
+                    {
+                        if (debugString)
+                            Console.WriteLine("Unsupported Command\n");
                         break;
                     }
 
